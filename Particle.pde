@@ -125,6 +125,7 @@ class Particle {
       strokeWeight(1.0);
       line(loc.x, loc.y, loc.x + (vel.x / 10), loc.y + (vel.y / 10));
       
+      // join-action with growing circle
       if(ani > 0)
       {
         stroke(180, 100, 100, 100);
