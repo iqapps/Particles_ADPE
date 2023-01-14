@@ -8,24 +8,22 @@
 
 // Array of particles
 Particle[] particles;
-Particle[] particlesNew;
-Particle[] particlesDis;
-int display = 0;
-int twindist = 3;
-PGraphics pg;
+int partdist = 80;
+int dispcnt = 1;
+int display = dispcnt;
 
 void setup() {
   // Use OpenGL
   fullScreen(OPENGL);
-  
+
   // Set up random noise
   noiseDetail(16, 0.6);
-  
+
   // Use HSB
   colorMode(HSB, 360, 100, 100, 100);
   background(0);
   strokeWeight(12);
-  
+
   initGrid();
   //pg = createGraphics(width, height);
   //pg.colorMode(HSB, 360, 100, 100, 100);
@@ -33,80 +31,108 @@ void setup() {
 
 void initGrid() {
   // Reset to a grid of particles
-  
+
   // Space between particles
-  int inc = 120;
+  int inc = partdist;
   // Number of particles that will fit
   int px = (int) width / inc;
   int py = (int) height / inc;
-  
+
   // Initialize particle array
   particles = new Particle[px * py];
-  
+
   // Populate particle array in a 
   // grid of reguarly-spaced particles
   int cur = 0;
   for (int x = 0; x < px; x ++) {
     for (int y = 0; y < py; y ++) {
-      float dx = inc / 2 *(random(1) - 0.5);
-      float dy = inc / 2 *(random(1) - 0.5);
+      float dx = 2.0 * inc * (random(1.0) - 0.5);
+      float dy = 2.0 * inc * (random(1.0) - 0.5);
       particles[cur] = new Particle(
-          (inc / 2 + x * inc) + dx, 
-          (inc / 2 + y * inc) + dy);
+        (inc / 2 + x * inc) + dx, 
+        (inc / 2 + y * inc) + dy);
       cur ++;
     }
   }
 }
 
 void draw() {
-  float minv = 30.0;
-  float maxv = 0.0;
-  
-  particlesNew = particles;
-  
-  // Cycle through the particles
-  for (int i = 0; i < particles.length; i ++) 
+  try
   {
-    particlesNew[i].update(particles, i, twindist);
-  }
-  
-  particles = particlesNew;
-  
-  for (int i = 0; i < particles.length; i ++)
-  {
-    Particle p = particles[i];
-    p.vel.add(p.acc);
-    minv = min(minv, p.vel.mag());
-    maxv = max(maxv, p.vel.mag());
-  }
-  
-  for (int i = 0; i < particles.length; i++)
-  {
-    Particle p = particles[i];
-    
-    if(p.twin >= 0 && p.twin < particles.length)
+
+    float minv = 3000.0;
+    float maxv = 0.0;
+
+    // Cycle through the particles
+    for (int i = 0; i < particles.length; i ++) 
     {
-      //p.loc = particles[p.twin].loc;
-      p.vel = particles[p.twin].vel;
+      Particle pi = particles[i];
+
+      if (pi.display)
+      {
+        particles[i].update(particles, i);
+      }
     }
-    else
+
+    // Cycle through the particles
+    for (int i = 0; i < particles.length; i ++) 
     {
-      p.vel.mult(twindist / maxv);
-      p.loc.add(p.vel);
-      p.vel.mult(maxv / twindist);
+      Particle pi = particles[i];
+
+      if (pi.display)
+      {
+        particles[i].size = particles[i].newSize;
+      }
     }
-  }
-  
-  if(display <= 0)
-  {
-    display = 1;
-    background(0);
-    
+
     for (int i = 0; i < particles.length; i ++)
     {
-      particles[i].display(particles, minv, maxv);
+      Particle pi = particles[i];
+      
+      if (pi.display)
+      {
+        minv = min(minv, pi.vel.mag());
+        maxv = max(maxv, pi.vel.mag());
+      }
     }
+
+    for (int i = 0; i < particles.length; i++)
+    { 
+      Particle pi = particles[i];
+
+      if (pi.display)
+      {
+        pi.loc.x += pi.vel.x / particles.length;
+        pi.loc.y += pi.vel.y / particles.length;
+      }
+    }
+
+    if (display <= 0)
+    {
+      display = dispcnt;
+      background(0);
+      int left = 0;
+
+      for (int i = 0; i < particles.length; i ++)
+      {
+        Particle pi = particles[i];
+
+        if (pi.display)
+        {
+          pi.display(particles, minv, maxv);
+          left++;
+        }
+      }
+      
+      fill(100, 100,100);
+      textSize(100);
+      text("" + left, 10, 120);
+    }
+
+    display--;
   }
-  
-  display--;
+  catch(Exception ex)
+  {
+    println("Ex:"+ex);
+  }
 }
