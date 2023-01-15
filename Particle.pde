@@ -42,7 +42,6 @@ class Particle {
   void update(Particle[] particles, int me)
   {
     // Re-calculate acceleration
-    PVector mou = new PVector(0,0);
     PVector pull = new PVector((width / 2) - loc.x, (height / 2) - loc.y);
     pull.mult(0.005);
     PVector att = new PVector(0,0);
@@ -72,52 +71,42 @@ class Particle {
       }
     }
   
-    if (mousePressed) {
-      // Calculate average of all 
-      // touch locations
-      
-      float mx = 0;
-      float my = 0;
-      
-      // Add the positions
-      for (int i = 0; i < touches.length; i ++) {
-        mx += touches[i].x;
-        my += touches[i].y;
-      }
-      
-      // Compute average
-      mx = mx / touches.length;
-      my = my / touches.length;
-      
-      if (!(mx != mx || my != my)) {
-        // Calculate acceleration based
-        // on relative location to the
-        // average of the touch points
-        mou.x = mx - loc.x;
-        mou.y = my - loc.y;
-        
-        // Normalize the vector
-        mou.normalize();
-        mou.mult(1);
-      }
-    }
     
     // Add changes to velocity
     vel.add(att);
     vel.add(pull);
-    vel.add(mou);
     vel.limit(1000);
   }
   
-  void display(Particle[] particles, float minv, float maxv) {
+  void display(Particle[] particles, float minv, float maxv, int coloring) {
     // Don't display if invalid values or we're off-screen
     if(loc.x > 0 && loc.x < width &&
         loc.y > 0 && loc.y < height)
     {
-      // Color based on position on
-      // the screen and time
-      float h = 36 + (((vel.mag() - minv) / (maxv - minv)) * (360 - 36));
-      stroke(h, 100, 100, 100);
+      float c = 180;
+      
+      // Color based on coloring arg using minv and maxv for ranges
+      switch(coloring)
+      {
+        case 0: // color by size
+        {
+          c = 36 + (((size - minv) / (maxv - minv)) * (360 - 36));          
+        }
+        break;
+        
+        case 1: // color by speed
+        {
+          c = 36 + (((vel.mag() - minv) / (maxv - minv)) * (360 - 36));
+        }
+        break;
+        
+        case 2: // color by direction
+        {
+          c = 0 + (vel.heading() / TAU) * (360 - 0);
+        }
+        break;      }
+      
+      stroke(c, 100, 100, 100);
       
       // Draw the point
       strokeWeight(10 + (8 * size));

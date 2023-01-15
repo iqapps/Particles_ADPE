@@ -12,6 +12,9 @@ int partdist = 80;
 int dispcnt = 1;
 int display = dispcnt;
 int startSecs;
+int coloring = 0;
+float coloringX = width;
+boolean mHandled = false;
 
 void setup() {
   // Use OpenGL
@@ -62,9 +65,37 @@ void initGrid() {
 void draw() {
   try
   {
-
     float minv = 3000.0;
     float maxv = 0.0;
+    
+    if (mousePressed)
+    {
+      if(mHandled == false)
+      {
+        mHandled = true;
+        // Calculate average of all 
+        // touch locations
+      
+        float mx = 0;
+        float my = 0;
+      
+        // Add the positions
+        if(touches.length == 1)
+        {
+          mx += touches[0].x;
+          my += touches[0].y;
+        }
+      
+        if(mx < coloringX && my > height - 120)
+        {
+          coloring = (coloring + 1) % 3;
+        }
+      }
+    }
+    else
+    {
+      mHandled = false;
+    }
 
     // Cycle through the particles
     for (int i = 0; i < particles.length; i ++) 
@@ -94,8 +125,22 @@ void draw() {
       
       if (pi.display)
       {
-        minv = min(minv, pi.vel.mag());
-        maxv = max(maxv, pi.vel.mag());
+        switch(coloring)
+        {
+          case 0:
+          {
+             minv = min(minv, pi.size);
+             maxv = max(maxv, pi.size);        
+          }
+          break;
+          
+          case 1:
+          {
+            minv = min(minv, pi.vel.mag());
+            maxv = max(maxv, pi.vel.mag());
+          }
+          break;
+        }
       }
     }
 
@@ -122,7 +167,7 @@ void draw() {
 
         if (pi.display)
         {
-          pi.display(particles, minv, maxv);
+          pi.display(particles, minv, maxv, coloring);
           left++;
         }
       }
@@ -135,6 +180,26 @@ void draw() {
       float sw = textWidth(rt);
       
       text(rt, width - 10 - sw, 120);
+      
+      String cmode = "SIZE COLOR";
+      
+      switch(coloring)
+      {
+        case 1:
+        {
+          cmode = "SPEED COLOR";
+        }
+        break;
+        
+        case 2:
+        {
+          cmode = "HEADING COLOR";
+        }
+        break;
+      }
+      
+      text(cmode, 10, height - 20);
+      coloringX = textWidth(cmode);
     }
 
     display--;
