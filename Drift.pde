@@ -11,6 +11,7 @@ Particle[] particles;
 int partdist = 80;
 int dispcnt = 1;
 int display = dispcnt;
+int startSecs;
 
 void setup() {
   // Use OpenGL
@@ -27,6 +28,8 @@ void setup() {
   initGrid();
   //pg = createGraphics(width, height);
   //pg.colorMode(HSB, 360, 100, 100, 100);
+  
+  startSecs = getTime();
 }
 
 void initGrid() {
@@ -127,6 +130,11 @@ void draw() {
       fill(100, 100,100);
       textSize(100);
       text("" + left, 10, 120);
+      
+      String rt = getRunTime();
+      float sw = textWidth(rt);
+      
+      text(rt, width - 10 - sw, 120);
     }
 
     display--;
@@ -135,4 +143,36 @@ void draw() {
   {
     println("Ex:"+ex);
   }
+}
+
+String getRunTime()
+{
+  int secs = getTime() - startSecs;
+  int hours = (secs / 60) / 60;
+  secs -= hours * 60 * 60;
+  int mins = secs / 60;
+  secs -= mins * 60;
+  
+  return getN(hours, 2) + ":" + getN(mins, 2) + ":" + getN(secs, 2);
+}
+
+String getN(int n, int length)
+{
+  String result = "" + n;
+  
+  while(result.length() < length)
+  {
+    result = "0" + result;
+  }
+  
+  return result;
+}
+
+int getTime()
+{
+  int y = year();
+  int d  = day();
+  int h = hour();
+  int m = minute();
+  return second() + ((((m * 60) + h*60) + d*24) + y*365);
 }
