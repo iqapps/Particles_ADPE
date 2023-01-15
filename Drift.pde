@@ -167,7 +167,7 @@ void draw() {
 
         if (pi.display)
         {
-          pi.display(particles, minv, maxv, coloring);
+          pi.display(particles, i, minv, maxv, coloring);
           left++;
         }
       }

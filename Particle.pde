@@ -78,7 +78,7 @@ class Particle {
     vel.limit(1000);
   }
   
-  void display(Particle[] particles, float minv, float maxv, int coloring) {
+  void display(Particle[] particles, int me, float minv, float maxv, int coloring) {
     // Don't display if invalid values or we're off-screen
     if(loc.x > 0 && loc.x < width &&
         loc.y > 0 && loc.y < height)
@@ -102,9 +102,10 @@ class Particle {
         
         case 2: // color by direction
         {
-          c = 0 + (vel.heading() / TAU) * (360 - 0);
+          c = 0 + (((vel.heading() + PI) / TAU) * (360 - 0));
         }
-        break;      }
+        break;
+      }
       
       stroke(c, 100, 100, 100);
       
