@@ -86,9 +86,9 @@ void draw() {
           my += touches[0].y;
         }
       
-        if(mx < coloringX && my > height - 120)
+        if((mx < (width / 4)) && (my > (3 * height / 4)))
         {
-          coloring = (coloring + 1) % 3;
+          coloring = (coloring + 1) % 4;
         }
       }
     }
@@ -140,6 +140,13 @@ void draw() {
             maxv = max(maxv, pi.vel.mag());
           }
           break;
+          
+          case 3:
+          {
+            minv = min(minv, pi.att.mag());
+            maxv = max(maxv, pi.att.mag());
+          }
+          break;
         }
       }
     }
@@ -174,32 +181,42 @@ void draw() {
       
       fill(100, 100,100);
       textSize(100);
-      text("" + left, 10, 120);
+      text("" + left, 20, 120);
       
       String rt = getRunTime();
       float sw = textWidth(rt);
       
-      text(rt, width - 10 - sw, 120);
+      text(rt, width - 20 - sw, 120);
       
-      String cmode = "SIZE COLOR";
+      String cmode = "SIZE";
       
       switch(coloring)
       {
         case 1:
         {
-          cmode = "SPEED COLOR";
+          cmode = "SPEED";
         }
         break;
         
         case 2:
         {
-          cmode = "HEADING COLOR";
+          cmode = "HEADING";
+        }
+        break;
+        
+        case 3:
+        {
+          cmode = "CHANGE";
         }
         break;
       }
       
       text(cmode, 10, height - 20);
+      textSize(28);
+      text("Coloring mode", 10, height - 130);
       coloringX = textWidth(cmode);
+      
+      
     }
 
     display--;
@@ -213,12 +230,14 @@ void draw() {
 String getRunTime()
 {
   int secs = getTime() - startSecs;
-  int hours = (secs / 60) / 60;
-  secs -= hours * 60 * 60;
-  int mins = secs / 60;
-  secs -= mins * 60;
+  int hours = floor(secs / 3600);
+  secs = secs % 3600;
+  int mins = floor(secs / 60);
+  secs = secs % 60;
   
-  return getN(hours, 2) + ":" + getN(mins, 2) + ":" + getN(secs, 2);
+  return getN(hours, 2) + ":" + 
+         getN(mins, 2) + ":" + 
+         getN(secs, 2);
 }
 
 String getN(int n, int length)
@@ -235,9 +254,5 @@ String getN(int n, int length)
 
 int getTime()
 {
-  int y = year();
-  int d  = day();
-  int h = hour();
-  int m = minute();
-  return second() + ((((m * 60) + h*60) + d*24) + y*365);
+  return second() + (minute()*60) + (hour()*3600) + (day()*86400);
 }

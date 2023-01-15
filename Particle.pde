@@ -2,6 +2,7 @@
 class Particle {
   PVector loc; // location
   PVector vel; // velocity
+  PVector att;
   float size = 1;
   boolean display;
   float newSize = 1;
@@ -44,7 +45,7 @@ class Particle {
     // Re-calculate acceleration
     PVector pull = new PVector((width / 2) - loc.x, (height / 2) - loc.y);
     pull.mult(0.005);
-    PVector att = new PVector(0,0);
+    att = new PVector(0,0);
     
     for (int i = 0; i < particles.length; i ++)
     {
@@ -66,7 +67,7 @@ class Particle {
  
         float dist = drag.mag();
         drag.normalize();
-        drag.mult(5 * p.weight() / pow(dist, 2));
+        drag.mult(25 * p.weight() / pow(dist, 1.8));
         att.add(drag);
       }
     }
@@ -102,7 +103,16 @@ class Particle {
         
         case 2: // color by direction
         {
-          c = 0 + (((vel.heading() + PI) / TAU) * (360 - 0));
+          PVector ref = new PVector(width / 2, height / 2);
+          ref.sub(loc);
+          float rh = (ref.heading() - PI - vel.heading() + TAU + TAU) % TAU;
+          c = 36 + ((rh / TAU) * (360 - 36));
+        }
+        break;
+        
+        case 3:
+        {
+          c = 36 + (((att.mag() - minv) / (maxv - minv)) * (360 - 36));
         }
         break;
       }
@@ -121,7 +131,7 @@ class Particle {
         stroke(180, 100, 100, 100);
         strokeWeight(2.0);
         fill(0);
-        ellipse(loc.x, loc.y, 10 * (gAni - ani), 10 * (gAni - ani));
+        ellipse(loc.x, loc.y, 10 * (size + (gAni - ani)), 10 * (size + (gAni - ani)));
         time--;
         if(time <= 0)
         {
