@@ -40,7 +40,7 @@ class Particle {
     return 4 * PI * newSize * newSize * newSize / 3;
   }
   
-  void update(Particle[] particles, int me)
+  void update(Particle[] particles, int me, int weight, float factor)
   {
     // Re-calculate acceleration
     PVector pull = new PVector((width / 2) - loc.x, (height / 2) - loc.y);
@@ -67,12 +67,11 @@ class Particle {
  
         float dist = drag.mag();
         drag.normalize();
-        drag.mult(25 * p.weight() / pow(dist, 1.8));
+        drag.mult(weight * p.weight() / pow(dist, factor));
         att.add(drag);
       }
     }
-  
-    
+ 
     // Add changes to velocity
     vel.add(att);
     vel.add(pull);

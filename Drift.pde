@@ -8,15 +8,21 @@
 
 // Array of particles
 Particle[] particles;
-int partdist = 80;
+int initObjects = 361;
 int dispcnt = 1;
 int display = dispcnt;
 int startSecs;
 int coloring = 0;
-float coloringX = width;
+//float coloringX = width;
 boolean mHandled = false;
+String[] cmodes = {"SIZE", "SPEED", "HEADING", "CHANGE"};;
+String[] rmodes = {"RESET", "AGAIN"};
+int weight = 25;
+float factor = 1.9;
+int reset = 0;
 
-void setup() {
+void setup() 
+{
   // Use OpenGL
   fullScreen(OPENGL);
 
@@ -35,34 +41,39 @@ void setup() {
   startSecs = getTime();
 }
 
-void initGrid() {
+void initGrid() 
+{
   // Reset to a grid of particles
 
   // Space between particles
-  int inc = partdist;
+  
   // Number of particles that will fit
-  int px = (int) width / inc;
-  int py = (int) height / inc;
+  int wh = min(width, height);
+  int d = (int)round(sqrt(initObjects));
+  int dxy = (int)(wh / d);
+  int xo = (width - (dxy * d)) / 2;
+  int yo = (height - (dxy * d)) / 2;
 
   // Initialize particle array
-  particles = new Particle[px * py];
+  particles = new Particle[d * d];
 
   // Populate particle array in a 
   // grid of reguarly-spaced particles
   int cur = 0;
-  for (int x = 0; x < px; x ++) {
-    for (int y = 0; y < py; y ++) {
-      float dx = 2.0 * inc * (random(1.0) - 0.5);
-      float dy = 2.0 * inc * (random(1.0) - 0.5);
-      particles[cur] = new Particle(
-        (inc / 2 + x * inc) + dx, 
-        (inc / 2 + y * inc) + dy);
+  for (int x = 0; x < d; x ++) {
+    for (int y = 0; y < d; y ++) {
+     
+      float dx = random(1.0) - 0.5;
+      float dy = random(1.0) - 0.5;
+      
+      particles[cur] = new Particle(xo + dx + (x * dxy), yo + dy + (y * dxy));
       cur ++;
     }
   }
 }
 
-void draw() {
+void draw() 
+{
   try
   {
     float minv = 3000.0;
@@ -86,9 +97,24 @@ void draw() {
           my += touches[0].y;
         }
       
-        if((mx < (width / 4)) && (my > (3 * height / 4)))
+        if(my > (3 * height / 4))
         {
-          coloring = (coloring + 1) % 4;
+          if(mx < (width / 4))
+          {
+            coloring = (coloring + 1) % cmodes.length;
+          }
+          else
+          if(mx > (3 * width / 4))
+          {
+            if(reset == 0)
+            {
+              reset();
+            }
+            else
+            {
+              setup();
+            }
+          }
         }
       }
     }
@@ -104,7 +130,7 @@ void draw() {
 
       if (pi.display)
       {
-        particles[i].update(particles, i);
+        particles[i].update(particles, i, weight, factor);
       }
     }
 
@@ -166,7 +192,7 @@ void draw() {
     {
       display = dispcnt;
       background(0);
-      int left = 0;
+      int objects = 0;
 
       for (int i = 0; i < particles.length; i ++)
       {
@@ -175,55 +201,105 @@ void draw() {
         if (pi.display)
         {
           pi.display(particles, i, minv, maxv, coloring);
-          left++;
+          objects++;
         }
       }
       
+      // Set color of text
       fill(100, 100,100);
-      textSize(100);
-      text("" + left, 20, 120);
       
-      String rt = getRunTime();
-      float sw = textWidth(rt);
+      largeText("" + objects, 0);
+      largeText("" + getRunTime(), 1);
+      largeText(cmodes[coloring], 2);
+      largeText(rmodes[reset > 0 ? 1 : 0], 3);
       
-      text(rt, width - 20 - sw, 120);
-      
-      String cmode = "SIZE";
-      
-      switch(coloring)
-      {
-        case 1:
-        {
-          cmode = "SPEED";
-        }
-        break;
-        
-        case 2:
-        {
-          cmode = "HEADING";
-        }
-        break;
-        
-        case 3:
-        {
-          cmode = "CHANGE";
-        }
-        break;
-      }
-      
-      text(cmode, 10, height - 20);
-      textSize(28);
-      text("Coloring mode", 10, height - 130);
-      coloringX = textWidth(cmode);
-      
-      
+      littleText("Objects", 0);
+      littleText("Running Time", 1);
+      littleText("Coloring Mode", 2);
+      littleText("touch to reset", 3);
     }
 
     display--;
+    reset -= reset > 0 ? 1 : 0;
   }
   catch(Exception ex)
   {
     println("Ex:"+ex);
+  }
+}
+
+void reset()
+{
+  reset = 100;
+}
+
+void littleText(String text, int pos)
+{
+  textSize(28);
+  float tw = textWidth(text);
+  float th = 28;
+  int yo = 130;
+  
+  switch(pos)
+  {
+    case 0: // top left
+    {
+      text(text, 20, yo + 10 + th);
+    }
+    break;
+    
+    case 1: // top right
+    {
+      text(text, width - tw - 20, yo + 10 + th);
+    }
+    break;
+    
+    case 2: // bottom left
+    {
+      text(text, 20, height - yo);
+    }
+    break;
+    
+    case 3: // bottom right
+    {
+      text(text, width - tw - 20, height - yo);
+    }
+    break;
+  }
+}
+
+void largeText(String text, int pos)
+{
+  textSize(100);
+  float tw = textWidth(text);
+  float th = 100;
+  int yo = 10;
+  
+  switch(pos)
+  {
+    case 0: // top left
+    {
+      text(text, 10, yo + th);
+    }
+    break;
+    
+    case 1: // top right
+    {
+      text(text, width - tw - 10, yo + th);
+    }
+    break;
+    
+    case 2: // bottom left
+    {
+      text(text, 10, height - 10);
+    }
+    break;
+    
+    case 3: // bottom right
+    {
+      text(text, width - tw - 10, height - 10);
+    }
+    break;
   }
 }
 
