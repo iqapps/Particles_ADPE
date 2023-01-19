@@ -3,6 +3,7 @@ class Particle {
   PVector loc; // location
   PVector vel; // velocity
   PVector att;
+  float heat = 0;
   float size = 1;
   boolean display;
   float newSize = 1;
@@ -57,12 +58,13 @@ class Particle {
         float w = newWeight() + p.weight();
         float s = (size + p.size) / 2.0;
 
-        if(i < me && drag.mag() < s)
+        if(i < me && drag.mag() < s && weight > 0)
         {
           println("join " + me + " and " + i);
           newSize = (float)Math.cbrt(3 * w / (4 * PI));
           p.display = false;
           setAni(gAni);
+          heat += 0.001 * (vel.mag() * newWeight());
         }
  
         float dist = drag.mag();
@@ -76,6 +78,11 @@ class Particle {
     vel.add(att);
     vel.add(pull);
     vel.limit(1000);
+    
+    heat *= 1 - (1 / pow(10 * size, 2));
+    heat += 0.2 * size * att.mag();
+    
+    heat = min(500, max(0, heat));
   }
   
   void display(Particle[] particles, int me, float minv, float maxv, int coloring) {
@@ -111,7 +118,8 @@ class Particle {
         
         case 3:
         {
-          c = 36 + (((att.mag() - minv) / (maxv - minv)) * (360 - 36));
+          // c = 240 + (((heat - minv) / (maxv - minv)) * (360 - 240));
+          c = 240 + (120 * heat / maxv);
         }
         break;
       }
@@ -119,8 +127,18 @@ class Particle {
       stroke(c, 100, 100, 100);
       
       // Draw the point
-      strokeWeight(10 + (8 * size));
+      float s = 10 + 8 * size;
+      strokeWeight(s);
       point(loc.x, loc.y);
+      
+      // Draw sphere light
+      float oxy = 2 * s / 6; // 2 thirds away from center
+      for(int n = 0; n < 255; n += 255 / oxy)
+      {
+        //stroke
+      }
+      
+      // Draw the vector
       strokeWeight(1.0);
       line(loc.x, loc.y, loc.x + (vel.x / 10), loc.y + (vel.y / 10));
       

@@ -12,17 +12,26 @@ int initObjects = 361;
 int dispcnt = 1;
 int display = dispcnt;
 int startSecs;
-int coloring = 0;
+int coloring = 3;
 //float coloringX = width;
 boolean mHandled = false;
-String[] cmodes = {"SIZE", "SPEED", "HEADING", "CHANGE"};;
-String[] rmodes = {"RESET", "AGAIN"};
-int weight = 25;
+String[] cmodes = {"SIZE", "SPEED", "HEADING", "HEAT"};;
+String[] rmodes = {"BIG BANG", "KABOOM"};
+int weight = -25;
 float factor = 1.9;
 int reset = 0;
+float maxSs = 0;
 
 void setup() 
 {
+  maxSs = 0;
+  reset = 0;
+  weight = -25;
+  factor = 1.9;
+  mHandled = false;
+  coloring = 3;
+  
+  
   // Use OpenGL
   fullScreen(OPENGL);
 
@@ -48,9 +57,8 @@ void initGrid()
   // Space between particles
   
   // Number of particles that will fit
-  int wh = min(width, height);
   int d = (int)round(sqrt(initObjects));
-  int dxy = (int)(wh / d);
+  int dxy = 0; //(int)(wh / d);
   int xo = (width - (dxy * d)) / 2;
   int yo = (height - (dxy * d)) / 2;
 
@@ -63,10 +71,11 @@ void initGrid()
   for (int x = 0; x < d; x ++) {
     for (int y = 0; y < d; y ++) {
      
-      float dx = random(1.0) - 0.5;
-      float dy = random(1.0) - 0.5;
+      float dx = 50 * (random(1.0) - 0.5);
+      float dy = 50 * (random(1.0) - 0.5);
       
-      particles[cur] = new Particle(xo + dx + (x * dxy), yo + dy + (y * dxy));
+      // particles[cur] = new Particle(xo + dx + (x * dxy), yo + dy + (y * dxy));
+      particles[cur] = new Particle(xo + dx, yo + dy);
       cur ++;
     }
   }
@@ -122,6 +131,8 @@ void draw()
     {
       mHandled = false;
     }
+    
+    float speedSum = 0;
 
     // Cycle through the particles
     for (int i = 0; i < particles.length; i ++) 
@@ -131,7 +142,15 @@ void draw()
       if (pi.display)
       {
         particles[i].update(particles, i, weight, factor);
+        speedSum += particles[i].vel.mag();
       }
+    }
+    
+    maxSs = max(maxSs, speedSum);
+    
+    if((speedSum * 3) < maxSs)
+    {
+      weight = abs(weight);
     }
 
     // Cycle through the particles
@@ -169,8 +188,8 @@ void draw()
           
           case 3:
           {
-            minv = min(minv, pi.att.mag());
-            maxv = max(maxv, pi.att.mag());
+            minv = 0;
+            maxv = max(maxv, pi.heat);
           }
           break;
         }
@@ -213,10 +232,10 @@ void draw()
       largeText(cmodes[coloring], 2);
       largeText(rmodes[reset > 0 ? 1 : 0], 3);
       
-      littleText("Objects", 0);
+      littleText("Spheres", 0);
       littleText("Running Time", 1);
       littleText("Coloring Mode", 2);
-      littleText("touch to reset", 3);
+      littleText("touch twice to reset", 3);
     }
 
     display--;
