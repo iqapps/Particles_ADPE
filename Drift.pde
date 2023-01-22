@@ -8,6 +8,11 @@
 
 // Array of particles
 Particle[] particles;
+
+String[] cmodes = {"SIZE", "SPEED", "HEADING", "HEAT"};;
+String[] rmodes = {"BIG BANG", "KABOOM"};
+String smodes[] = {"Running time", "Frames per sec."};
+
 int initObjects = 361;
 int dispcnt = 1;
 int display = dispcnt;
@@ -15,12 +20,15 @@ int startSecs;
 int coloring = 3;
 //float coloringX = width;
 boolean mHandled = false;
-String[] cmodes = {"SIZE", "SPEED", "HEADING", "HEAT"};;
-String[] rmodes = {"BIG BANG", "KABOOM"};
+int about = 0;
+AboutText at; // = new AboutText();
+
 int weight = -25;
 float factor = 1.9;
 int reset = 0;
 float maxSs = 0;
+int smode = 0;
+float fRate = 0;
 
 void setup() 
 {
@@ -29,7 +37,6 @@ void setup()
   weight = -25;
   factor = 1.9;
   mHandled = false;
-  coloring = 3;
   
   
   // Use OpenGL
@@ -48,6 +55,9 @@ void setup()
   //pg.colorMode(HSB, 360, 100, 100, 100);
   
   startSecs = getTime();
+  at = new AboutText();
+  
+  frameRate(50.0);
 }
 
 void initGrid() 
@@ -81,7 +91,32 @@ void initGrid()
   }
 }
 
-void draw() 
+void draw()
+{
+  if(about > 1)
+  {
+    drawAbout();
+  }
+  else
+  {
+    drawSpheres();
+  }
+}
+
+
+void drawAbout()
+{
+  try
+  {
+    about = at.draw() ? 0 : 2;
+  }
+    catch(Exception ex)
+  {
+    println("Ex:"+ex);
+  }
+}
+
+void drawSpheres() 
 {
   try
   {
@@ -125,11 +160,24 @@ void draw()
             }
           }
         }
+        else if(my < height / 4)
+        {
+          if(mx > (3 * width / 4))
+          {
+            smode = (smode + 1) % smodes.length;
+          }
+          else
+          if(mx < (width / 4))
+          {
+            about = 1;
+          }
+        }
       }
     }
     else
     {
       mHandled = false;
+      about = about * 2;
     }
     
     float speedSum = 0;
@@ -224,22 +272,20 @@ void draw()
         }
       }
       
-      // Set color of text
+      String sm = smode == 0 ? getRunTime() : nf(int(fRate),0);
+
       fill(100, 100,100);
+      String[] lt = {str(objects), sm, cmodes[coloring], rmodes[reset > 0 ? 1 : 0]};
+      largeText(lt);
       
-      largeText("" + objects, 0);
-      largeText("" + getRunTime(), 1);
-      largeText(cmodes[coloring], 2);
-      largeText(rmodes[reset > 0 ? 1 : 0], 3);
-      
-      littleText("Spheres", 0);
-      littleText("Running Time", 1);
-      littleText("Coloring Mode", 2);
-      littleText("touch twice to reset", 3);
+      fill(180, 100, 100);
+      String st[] = {"Spheres", smodes[smode], "Coloring Mode", "touch twice to reset"};
+      smallText(st);
     }
 
     display--;
     reset -= reset > 0 ? 1 : 0;
+    fRate = (fRate * 49 + frameRate) / 50;
   }
   catch(Exception ex)
   {
@@ -252,73 +298,35 @@ void reset()
   reset = 100;
 }
 
-void littleText(String text, int pos)
+void smallText(String[] text)
 {
-  textSize(28);
-  float tw = textWidth(text);
   float th = 28;
-  int yo = 130;
+  textSize(th);
+  int yo = 110;
+  int xo = 20;
   
-  switch(pos)
+  for(int ii = 0; ii < 4; ii++)
   {
-    case 0: // top left
-    {
-      text(text, 20, yo + 10 + th);
-    }
-    break;
-    
-    case 1: // top right
-    {
-      text(text, width - tw - 20, yo + 10 + th);
-    }
-    break;
-    
-    case 2: // bottom left
-    {
-      text(text, 20, height - yo);
-    }
-    break;
-    
-    case 3: // bottom right
-    {
-      text(text, width - tw - 20, height - yo);
-    }
-    break;
+    float tw = textWidth(text[ii]);
+    float x = ii % 2 == 0 ? xo : width - tw - xo;
+    float y = ii / 2 <  1 ? yo + th : height - yo;
+    text(text[ii], x, y);
   }
 }
 
-void largeText(String text, int pos)
+void largeText(String[] text)
 {
-  textSize(100);
-  float tw = textWidth(text);
   float th = 100;
+  textSize(th);
   int yo = 10;
+  int xo = 10;
   
-  switch(pos)
+  for(int ii = 0; ii < 4; ii++)
   {
-    case 0: // top left
-    {
-      text(text, 10, yo + th);
-    }
-    break;
-    
-    case 1: // top right
-    {
-      text(text, width - tw - 10, yo + th);
-    }
-    break;
-    
-    case 2: // bottom left
-    {
-      text(text, 10, height - 10);
-    }
-    break;
-    
-    case 3: // bottom right
-    {
-      text(text, width - tw - 10, height - 10);
-    }
-    break;
+    float tw = textWidth(text[ii]);
+    float x = ii % 2 == 0 ? xo : width - tw - xo;
+    float y = ii / 2 <  1 ? th : height - yo;
+    text(text[ii], x, y);
   }
 }
 
