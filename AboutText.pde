@@ -4,38 +4,96 @@ class AboutText {
   String[] text = new String[] {
     "#About Mezmerize.",
     
-    "&Touch the screen to return to the Big Bang.",
+    "&Touch the screen to return to "+
+    "the Big Bang.",
     
-    "This program is a very simple simulation of "+
-    "a big bang creating a number of objects being "+
-    "spread initially in a random pattern, and "+
-    "then shifting to the gravity phase, where "+
-    "body gravity rules exist.",
+    "This program is a very simple "+
+    "simulation of a big bang creating "+
+    "a number of objects being spread "+
+    "initially in a random pattern, and "+
+    "then shifting to the gravity phase, "+
+    "where body gravity rules exist.",
     
-    "The simulation is shown in 2D only, but "+
-    "is using 3D body mass gravity rules.",
+    "The simulation is shown in 2D only, "+
+    "but is using 3D body mass gravity "+
+    "rules.",
     
-    "The gravity rules have been adjusted to make the "+
-    "simulation more interresting and to ensure a "+
+    "The gravity rules have been adjusted "+
+    "to make the simulation more "+
+    "interresting and to ensure a "+
     "resonable run time per bang.",
     
-    "The objects should be considered spheres of "+
-    "equal desity. When spheres collide they join "+
-    "into a single sphere with a mass equal to the "+
-    "sum of the colliding spheres. The resulting "+
-    "velocity vector after a collision, is random "+
-    "as the collision is never a direct hit.",
+    "The objects should be considered "+
+    "spheres of equal desity. When "+
+    "spheres collide they join into a "+
+    "single sphere with a mass equal "+
+    "to the sum of the colliding "+
+    "spheres. The resulting velocity "+
+    "vector after a collision, is random "+
+    "as the collision is never a direct "+
+    "hit.",
     
-    "When a collision occur, the sphere is getting "+
-    "hotter due to collision, and when bodies pull "+
-    "each other, they also becomes hotter.",
+    "When a collision occur, the sphere "+
+    "is getting hotter due to collision, "+
+    "and when bodies pull each other, "+
+    "they also becomes hotter.",
     
-    "The simulation is centered and held together "+
-    "by a virtual invisible black hole at the center "+
-    "of the screen. The black hole is very small and therefore "+
-   "will not be able to consume objects.",
+    "The simulation is centered and held "+
+    "together by a virtual invisible "+
+    "black hole at the center of the "+
+    "screen. The black hole is very "+
+    "small and therefore will not be "+
+    "able to consume objects.",
+  
+   "Each sphere/object is decorated with "+
+   "color, initially based on its heat value, "+
+   "but color can be changed to be based on "+
+   "speed, direction or size. Change color "+
+   "scheme with a touch on color mode.",
+   
+   "Each sphere / object is also decorated "+
+   "with a thin line indicating its "+
+   "direction and velocity. This has no "+
+   "practical influnce on the simulation "+
+   "other than being interesting to watch.",
+   
+   "Eventually, all spheres/objects will "+
+   "join into a single object, rotating "+
+   "about the center of the screen, which "+
+   "is actually the end of the simulation. "+
+   "Restart the simulation by touching the "+
+   "Big Bang text.",
+   
+   "The name Mesmerize came to me, after "+
+   "having developed this app, which by "+
+   "the way, started as an experiment for "+
+   "my self. I found it intriguing to see "+
+   "all the different ways the spheres "+
+   "would interact over a simulation.",
+   
+   "The simulation calculates every objects "+
+   "set of values on every frame displayed. "+
+   "When running on a Samsung Galaxy Note "+
+   "20 Ultra, the framerate is at maximum "+
+   "60 frames per second. This also means, "+
+   "that each object is repositioned 60 "+
+   "times per second, which means that "+
+   "the simulation is quite accurate during "+
+   "collisions, where the velocity vectors "+
+   "are a bit off.",
+   
+   "I have not tested this app on other "+
+   "phone models, but have considered "+
+   "differences in cpu speed and display "+
+   "resolutions. I will not fix problems "+
+   "with different makes or models out "+
+   "there, as there is an endless stream "+
+   "of different phones, and I would "+
+   "have no time for my self, if I went "+
+   "down that path.",
 
-   "&Touch the screen to return to the Big Bang."
+   "&Touch the screen to return to the "+
+   "Big Bang."
   };
   
   PGraphics pg;
