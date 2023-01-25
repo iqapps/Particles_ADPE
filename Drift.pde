@@ -11,7 +11,7 @@ Particle[] particles;
 
 String[] cmodes = {"SIZE", "SPEED", "HEADING", "HEAT"};;
 String[] rmodes = {"BIG BANG", "KABOOM"};
-String smodes[] = {"Running time", "Frames per sec."};
+String smodes[] = {"Running time", "Frames per sec.", "Width,Height"};
 
 int initObjects = 361;
 int dispcnt = 1;
@@ -32,15 +32,15 @@ float fRate = 0;
 
 void setup() 
 {
+  size(800, 800, OPENGL);
   maxSs = 0;
   reset = 0;
   weight = -25;
   factor = 1.9;
   mHandled = false;
-  
-  
+
   // Use OpenGL
-  fullScreen(OPENGL);
+  //fullScreen(OPENGL);
 
   // Set up random noise
   noiseDetail(16, 0.6);
@@ -57,7 +57,7 @@ void setup()
   startSecs = getTime();
   at = new AboutText();
   
-  frameRate(50.0);
+  frameRate(2000.0);
 }
 
 void initGrid() 
@@ -272,15 +272,15 @@ void drawSpheres()
         }
       }
       
-      String sm = smode == 0 ? getRunTime() : nf(int(fRate),0);
+      String sm = smode == 0 ? getRunTime() : (smode == 1 ? nf(int(fRate),0) : nf(width,0)+","+nf(height,0));
 
       fill(100, 100,100);
       String[] lt = {str(objects), sm, cmodes[coloring], rmodes[reset > 0 ? 1 : 0]};
-      largeText(lt);
+      float lth = largeText(lt);
       
       fill(180, 100, 100);
       String st[] = {"Spheres", smodes[smode], "Coloring Mode", "touch twice to reset"};
-      smallText(st);
+      smallText(st, lth);
     }
 
     display--;
@@ -298,12 +298,12 @@ void reset()
   reset = 100;
 }
 
-void smallText(String[] text)
+void smallText(String[] text, float lth)
 {
-  float th = 28;
+  float th = max(15.0, height * 28 / 1484.0);
   textSize(th);
-  int yo = 110;
-  int xo = 20;
+  int yo = (int)(lth * 1.1);
+  int xo = (int)(lth / 5.0);
   
   for(int ii = 0; ii < 4; ii++)
   {
@@ -314,12 +314,12 @@ void smallText(String[] text)
   }
 }
 
-void largeText(String[] text)
+float largeText(String[] text)
 {
-  float th = 100;
+  float th = max(40.0, height * 100 / 1484.0);
   textSize(th);
-  int yo = 10;
-  int xo = 10;
+  int yo = (int)(th / 10.0);
+  int xo = (int)(th / 10.0);
   
   for(int ii = 0; ii < 4; ii++)
   {
@@ -327,7 +327,10 @@ void largeText(String[] text)
     float x = ii % 2 == 0 ? xo : width - tw - xo;
     float y = ii / 2 <  1 ? th : height - yo;
     text(text[ii], x, y);
+    
   }
+  
+  return th;
 }
 
 String getRunTime()

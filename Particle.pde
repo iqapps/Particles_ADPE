@@ -11,13 +11,17 @@ class Particle {
   int time = 0;
   int gAni = 10;
   int gTime = 2;
+  float sFactor = 1.0;
   
   Particle(float x, float y) {
     // Initialize everything to 
     // default values
+    sFactor = min(width, height) * 1.0 / 1440.0;
     loc = new PVector(x, y);
-    vel = new PVector(r(200), r(200));
+    vel = new PVector(r(200 * sFactor), r(200 * sFactor));
     display = true;
+    size = sFactor;
+    newSize = sFactor;
   }
   
   float r(float s)
@@ -77,10 +81,10 @@ class Particle {
     // Add changes to velocity
     vel.add(att);
     vel.add(pull);
-    vel.limit(1000);
+    vel.limit(1000 * sFactor);
     
     heat *= 1 - (1 / pow(10 * size, 2));
-    heat += 0.2 * size * att.mag();
+    heat += 0.2 * size * att.mag() / sFactor;
     
     heat = min(500, max(0, heat));
   }
@@ -123,24 +127,17 @@ class Particle {
         }
         break;
       }
-      
+ 
       stroke(c, 100, 100, 100);
       
       // Draw the point
-      float s = 10 + 8 * size;
+      float s = (10 * sFactor) + (8 * size);
       strokeWeight(s);
       point(loc.x, loc.y);
       
-      // Draw sphere light
-      float oxy = 2 * s / 6; // 2 thirds away from center
-      for(int n = 0; n < 255; n += 255 / oxy)
-      {
-        //stroke
-      }
-      
       // Draw the vector
       strokeWeight(1.0);
-      line(loc.x, loc.y, loc.x + (vel.x / 10), loc.y + (vel.y / 10));
+      line(loc.x, loc.y, loc.x + (vel.x / 10.0), loc.y + (vel.y / 10.0));
       
       // add join action
       if(ani > 0)
@@ -148,7 +145,7 @@ class Particle {
         stroke(180, 100, 100, 100);
         strokeWeight(2.0);
         fill(0);
-        ellipse(loc.x, loc.y, 10 * (size + (gAni - ani)), 10 * (size + (gAni - ani)));
+        ellipse(loc.x, loc.y, sFactor * 10 * (size + (gAni - ani)), sFactor * 10 * (size + (gAni - ani)));
         time--;
         if(time <= 0)
         {
