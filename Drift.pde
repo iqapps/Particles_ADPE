@@ -32,15 +32,15 @@ float fRate = 0;
 
 void setup() 
 {
-  size(800, 800, OPENGL);
   maxSs = 0;
   reset = 0;
   weight = -25;
   factor = 1.9;
   mHandled = false;
 
-  // Use OpenGL
-  //fullScreen(OPENGL);
+  // Use this size and use OpenGL
+  fullScreen(OPENGL);
+  //size(12, OPENGL);
 
   // Set up random noise
   noiseDetail(16, 0.6);
@@ -300,7 +300,7 @@ void reset()
 
 void smallText(String[] text, float lth)
 {
-  float th = max(15.0, height * 28 / 1484.0);
+  float th = max(15.0, width * 28 / 1484.0);
   textSize(th);
   int yo = (int)(lth * 1.1);
   int xo = (int)(lth / 5.0);
@@ -316,7 +316,7 @@ void smallText(String[] text, float lth)
 
 float largeText(String[] text)
 {
-  float th = max(40.0, height * 100 / 1484.0);
+  float th = max(40.0, width * 100 / 1484.0);
   textSize(th);
   int yo = (int)(th / 10.0);
   int xo = (int)(th / 10.0);

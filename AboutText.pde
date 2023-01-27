@@ -2,7 +2,7 @@ class AboutText {
   // # => Header text
   // & => bold
   String[] text = new String[] {
-    "#About Mezmerize.",
+    "#About Mezmerize",
     
     "&Touch the screen to return to "+
     "the Big Bang.",
