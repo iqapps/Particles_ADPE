@@ -69,11 +69,11 @@ class Particle {
           newSize = (float)Math.cbrt(3 * w / (4 * PI));
           p.display = false;
           setAni(gAni);
-          heat += 1 * vel.mag() * vel.mag() * min(p.weight(), weight()) / max(p.weight(), weight());
+          heat += 1 * vel.mag() * vel.mag() * min(p.weight(), weight()) / w;
         }
  
         float dist = drag.mag();
-        maxA = max(dist, maxA);;
+        maxA = max(dist, maxA);
         drag.normalize();
         drag.mult(weight * p.weight() / pow(dist, factor));
         att.add(drag);
@@ -85,9 +85,9 @@ class Particle {
     vel.add(pull);
     vel.limit(1000 * sFactor);
     
-    float sf = 250.0 * size;
+    float sf = 400.0 * size * sFactor;
     heat *= (sf - 1) / sf;
-    heat += 0.1 * maxA / (weight() * sFactor);
+    heat += 0.01 * maxA / (weight() * sFactor);
     //heat += 0.0001 * hv / sFactor;
     heat = min(500, max(0, heat));
   }
