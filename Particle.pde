@@ -51,7 +51,7 @@ class Particle {
     PVector pull = new PVector((width / 2) - loc.x, (height / 2) - loc.y);
     pull.mult(0.005);
     att = new PVector(0,0);
-    float hv = 0;
+    float maxA = 0;
     
     for (int i = 0; i < particles.length; i ++)
     {
@@ -69,11 +69,11 @@ class Particle {
           newSize = (float)Math.cbrt(3 * w / (4 * PI));
           p.display = false;
           setAni(gAni);
-          heat += 0.01 * (vel.mag() * newWeight());
+          heat += 1 * vel.mag() * vel.mag() * min(p.weight(), weight()) / max(p.weight(), weight());
         }
  
         float dist = drag.mag();
-        hv += dist;
+        maxA = max(dist, maxA);;
         drag.normalize();
         drag.mult(weight * p.weight() / pow(dist, factor));
         att.add(drag);
@@ -85,8 +85,10 @@ class Particle {
     vel.add(pull);
     vel.limit(1000 * sFactor);
     
-    heat *= 1 - (1 / (250 * size));
-    heat += 0.0001 * hv / sFactor;
+    float sf = 250.0 * size;
+    heat *= (sf - 1) / sf;
+    heat += 0.1 * maxA / (weight() * sFactor);
+    //heat += 0.0001 * hv / sFactor;
     heat = min(500, max(0, heat));
   }
   
