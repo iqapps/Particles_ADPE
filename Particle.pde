@@ -51,6 +51,7 @@ class Particle {
     PVector pull = new PVector((width / 2) - loc.x, (height / 2) - loc.y);
     pull.mult(0.005);
     att = new PVector(0,0);
+    float maxA = 0;
     
     for (int i = 0; i < particles.length; i ++)
     {
@@ -68,10 +69,11 @@ class Particle {
           newSize = (float)Math.cbrt(3 * w / (4 * PI));
           p.display = false;
           setAni(gAni);
-          heat += 0.001 * (vel.mag() * newWeight());
+          heat += 1 * vel.mag() * vel.mag() * min(p.weight(), weight()) / w;
         }
  
         float dist = drag.mag();
+        maxA = max(dist, maxA);
         drag.normalize();
         drag.mult(weight * p.weight() / pow(dist, factor));
         att.add(drag);
@@ -83,16 +85,16 @@ class Particle {
     vel.add(pull);
     vel.limit(1000 * sFactor);
     
-    heat *= 1 - (1 / pow(10 * size, 2));
-    heat += 0.2 * size * att.mag() / sFactor;
-    
+    float sf = 25.0 * weight() * sFactor;
+    heat *= (sf - 1) / sf;
+    heat += 0.01 * maxA / (weight() * sFactor);
     heat = min(500, max(0, heat));
   }
   
   void display(Particle[] particles, int me, float minv, float maxv, int coloring) {
     // Don't display if invalid values or we're off-screen
-    if(loc.x > 0 && loc.x < width &&
-        loc.y > 0 && loc.y < height)
+    if(loc.x > -size && loc.x < (width + size) &&
+        loc.y > -size && loc.y < (height + size))
     {
       float c = 180;
       
@@ -120,10 +122,10 @@ class Particle {
         }
         break;
         
-        case 3:
+        case 3: // color by heat
         {
           // c = 240 + (((heat - minv) / (maxv - minv)) * (360 - 240));
-          c = 240 + (120 * heat / maxv);
+          c = (240 + (168.0 * heat / 500.0)) % 360;
         }
         break;
       }

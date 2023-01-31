@@ -32,15 +32,15 @@ float fRate = 0;
 
 void setup() 
 {
-  size(800, 800, OPENGL);
   maxSs = 0;
   reset = 0;
   weight = -25;
   factor = 1.9;
   mHandled = false;
 
-  // Use OpenGL
-  //fullScreen(OPENGL);
+  // Use this size and use OpenGL
+  fullScreen(OPENGL);
+  //size(12, OPENGL);
 
   // Set up random noise
   noiseDetail(16, 0.6);
@@ -300,7 +300,7 @@ void reset()
 
 void smallText(String[] text, float lth)
 {
-  float th = max(15.0, height * 28 / 1484.0);
+  float th = max(15.0, width * 28 / 1484.0);
   textSize(th);
   int yo = (int)(lth * 1.1);
   int xo = (int)(lth / 5.0);
@@ -316,7 +316,7 @@ void smallText(String[] text, float lth)
 
 float largeText(String[] text)
 {
-  float th = max(40.0, height * 100 / 1484.0);
+  float th = max(40.0, width * 100 / 1484.0);
   textSize(th);
   int yo = (int)(th / 10.0);
   int xo = (int)(th / 10.0);
@@ -335,7 +335,14 @@ float largeText(String[] text)
 
 String getRunTime()
 {
-  int secs = getTime() - startSecs;
+  int secs = getTime();
+  if(secs < startSecs)
+  {
+    startSecs += 86400;
+  }
+  
+  secs = secs - startSecs;
+    
   int hours = floor(secs / 3600);
   secs = secs % 3600;
   int mins = floor(secs / 60);
@@ -360,5 +367,5 @@ String getN(int n, int length)
 
 int getTime()
 {
-  return second() + (minute()*60) + (hour()*3600) + (day()*86400);
+  return second() + (minute()*60) + (hour()*3600);
 }
