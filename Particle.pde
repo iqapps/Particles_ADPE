@@ -87,7 +87,7 @@ class Particle {
     
     float sf = 25.0 * weight() * sFactor;
     heat *= (sf - 1) / sf;
-    heat += 0.01 * maxA / (weight() * sFactor);
+    heat += 0.01 * maxA / (weight() * sFactor);
     heat = min(500, max(0, heat));
   }
   
