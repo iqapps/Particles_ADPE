@@ -1,160 +1,358 @@
-	// Particle class
-class Particle {
-  PVector loc; // location
-  PVector vel; // velocity
-  PVector att;
-  float heat = 0;
-  float size = 1;
-  boolean display;
-  float newSize = 1;
-  int ani = 0;
-  int time = 0;
-  int gAni = 10;
-  int gTime = 2;
-  float sFactor = 1.0;
+/**
+ * Drift
+ * by CalsignLabs
+ * 
+ * Touch the screen to manipulate the 
+ * particles. Multi-touch is supported.
+ */
+
+// Array of particles
+Particle[] particles;
+
+int cmode = 3;
+String[] cmodes = {"SIZE", "SPEED", "HEADING", "HEAT"};
+
+int rmode = 0;
+String[] rmodes = {"BIG BANG", "KABOOM"};
+
+int smode = 0;
+String smodes[] = {"Running time", "Frames per sec.", "Width,Height"};
+
+ArrayList<Button> buttons = new ArrayList<Button>();
+
+int initObjects = 361;
+int dispcnt = 1;
+int display = dispcnt;
+int startSecs;
+int about = 0;
+AboutText at;
+
+int weight;
+float factor;
+
+float maxSs = 0;
+float fRate = 0;
+
+void setup() 
+{
+  maxSs = 0;
+  rmode = 0;
+  weight = -25;
+  factor = 1.9;
+
+  // Use this size and use OpenGL
+  fullScreen(OPENGL);
+
+  // Set up random noise
+  noiseDetail(16, 0.6);
+
+  // Use HSB
+  colorMode(HSB, 360, 100, 100, 100);
+  background(0);
+  strokeWeight(12);
+
+  initParticles();  
+  startSecs = getTime();
+  at = new AboutText();
   
-  Particle(float x, float y) {
-    // Initialize everything to 
-    // default values
-    sFactor = min(width, height) * 1.0 / 1440.0;
-    loc = new PVector(x, y);
-    vel = new PVector(r(200 * sFactor), r(200 * sFactor));
-    display = true;
-    size = sFactor;
-    newSize = sFactor;
+  frameRate(2000.0);
+  
+  if(buttons.size() == 0)
+  {
+    float qw = width / 3;
+    float qh = height / 8;
+    buttons.add(new Button("", 0,          0,           0, qw, qh));
+    buttons.add(new Button("", 1,      0.   , height - qh, qw, qh));
+    buttons.add(new Button("", 2, width - qw,           0, qw, qh));
+    buttons.add(new Button("", 3, width - qw, height - qh, qw, qh));
+  }
+}
+
+void initParticles()
+{
+  // Reset to a grid of particles
+
+  // Space between particles
+  
+  // Number of particles that will fit
+  int d = (int)round(sqrt(initObjects));
+  int dxy = 0; //(int)(wh / d);
+  int xo = (width - (dxy * d)) / 2;
+  int yo = (height - (dxy * d)) / 2;
+
+  // Initialize particle array
+  particles = new Particle[d * d];
+
+  // Populate particle array in a 
+  // grid of reguarly-spaced particles
+  int cur = 0;
+  for (int x = 0; x < d; x ++) {
+    for (int y = 0; y < d; y ++) {
+     
+      float dx = 50 * (random(1.0) - 0.5);
+      float dy = 50 * (random(1.0) - 0.5);
+      
+      // particles[cur] = new Particle(xo + dx + (x * dxy), yo + dy + (y * dxy));
+      particles[cur] = new Particle(xo + dx, yo + dy);
+      cur ++;
+    }
+  }
+}
+
+void draw()
+{
+  if(about > 1)
+  {
+    drawAbout();
+  }
+  else
+  {
+    drawSpheres();
+  }
+}
+
+void drawAbout()
+{
+  try
+  {
+    about = at.draw() ? 0 : 2;
+  }
+  catch(Exception ex)
+  {
+    println("Ex:"+ex);
+  }
+}
+
+void handleButtons()
+{
+  boolean touch = false;
+  
+  for(Button b : buttons)
+  {
+    if(b.draw())
+    {
+      touch = true;
+      
+      switch(b.identity)
+      {
+        case 0:
+          about = 1;
+          break;
+        case 1:
+          cmode = (cmode + 1) % cmodes.length;
+          break;
+        case 2:
+          smode = (smode + 1) % smodes.length;
+          break;
+        case 3:
+          if(rmode == 0)
+          {
+            rmode = 100;
+          }
+          else
+          {
+            setup();
+          }
+          break;
+      }
+    }
   }
   
-  float r(float s)
+  if(touch == false)
   {
-    return random(s) - (s / 2.0);
+    about *= 2;
   }
-  
-  void setAni(int a)
+}
+
+void drawSpheres() 
+{
+  try
   {
-    ani = a;
-    time = 0;
-  }
-  
-  float weight()
-  {
-    return 4 * PI * size * size * size / 3;
-  }
-  
-  float newWeight()
-  {
-    return 4 * PI * newSize * newSize * newSize / 3;
-  }
-  
-  void update(Particle[] particles, int me, int weight, float factor)
-  {
-    // Re-calculate acceleration
-    PVector pull = new PVector((width / 2) - loc.x, (height / 2) - loc.y);
-    pull.mult(0.005);
-    att = new PVector(0,0);
-    float hAdd = 0;
+    float minv = 3000.0;
+    float maxv = 0.0;
+    float speedSum = 0;
+
+    // Cycle through the particles
+    for (int i = 0; i < particles.length; i ++) 
+    {
+      Particle pi = particles[i];
+
+      if (pi.display)
+      {
+        particles[i].update(particles, i, weight, factor);
+        speedSum += particles[i].vel.mag();
+      }
+    }
     
+    maxSs = max(maxSs, speedSum);
+    
+    if((speedSum * 3) < maxSs)
+    {
+      weight = abs(weight);
+    }
+
+    // Cycle through the particles
+    for (int i = 0; i < particles.length; i ++) 
+    {
+      Particle pi = particles[i];
+
+      if (pi.display)
+      {
+        particles[i].size = particles[i].newSize;
+      }
+    }
+
     for (int i = 0; i < particles.length; i ++)
     {
-      Particle p = particles[i];
+      Particle pi = particles[i];
       
-      if(p.display && i != me)
+      if (pi.display)
       {
-        PVector drag = new PVector(p.loc.x - loc.x, p.loc.y - loc.y);
-        float w = newWeight() + p.weight();
-        float s = (size + p.size) / 2.0;
-
-        if(i < me && drag.mag() < s && weight > 0)
+        switch(cmode)
         {
-          // println("join " + me + " and " + i);
-          newSize = (float)Math.cbrt(3 * w / (4 * PI));
-          p.display = false;
-          setAni(gAni);
-          heat += (0.1F * (vel.mag() + p.vel.mag()) * (p.weight() + weight())) / w;
+          case 0:
+          {
+             minv = min(minv, pi.size);
+             maxv = max(maxv, pi.size);        
+          }
+          break;
+          
+          case 1:
+          {
+            minv = min(minv, pi.vel.mag());
+            maxv = max(maxv, pi.vel.mag());
+          }
+          break;
+          
+          case 3:
+          {
+            minv = 0;
+            maxv = max(maxv, pi.heat);
+          }
+          break;
         }
- 
-        float dist = drag.mag();
-        drag.normalize();
-        drag.mult(weight * p.weight() / pow(dist, factor));
-        hAdd = max(drag.mag(), hAdd);      
-        att.add(drag);
       }
     }
- 
-    // Add changes to velocity
-    vel.add(att);
-    vel.add(pull);
-    vel.limit(1000 * sFactor);
-    
-    float sf = 100.0 * weight() * sFactor;
-    heat *= (sf - 1) / sf;
-    heat += 10F * hAdd / (weight() * sFactor);
-    heat = min(500, max(0, heat));
+
+    for (int i = 0; i < particles.length; i++)
+    { 
+      Particle pi = particles[i];
+
+      if (pi.display)
+      {
+        pi.loc.x += pi.vel.x / particles.length;
+        pi.loc.y += pi.vel.y / particles.length;
+      }
+    }
+
+    if (display <= 0)
+    {
+      display = dispcnt;
+      background(0);
+      
+      handleButtons();
+      
+      int objects = 0;
+
+      for (int i = 0; i < particles.length; i ++)
+      {
+        Particle pi = particles[i];
+
+        if (pi.display)
+        {
+          pi.display(particles, i, minv, maxv, cmode);
+          objects++;
+        }
+      }
+      
+      String sm = smode == 0 ? getRunTime() : (smode == 1 ? nf(int(fRate),0) : nf(width,0)+","+nf(height,0));
+
+      fill(100, 100,100);
+      String[] lt = {str(objects), sm, "" +cmode/*cmodes[cmode]*/, rmodes[rmode > 0 ? 1 : 0]};
+      float lth = largeText(lt);
+      
+      fill(180, 100, 100);
+      String st[] = {"Spheres", smodes[smode], "Color Mode", "touch twice to reset"};
+      smallText(st, lth);
+    }
+
+    display--;
+    rmode -= rmode > 0 ? 1 : 0;
+    fRate = (fRate * 49 + frameRate) / 50;
+  }
+  catch(Exception ex)
+  {
+    println("Ex:"+ex);
+  }
+}
+
+void smallText(String[] text, float lth)
+{
+  float th = max(15.0, width * 28 / 1484.0);
+  textSize(th);
+  int yo = (int)(lth * 1.1);
+  int xo = (int)(lth / 5.0);
+  
+  for(int ii = 0; ii < 4; ii++)
+  {
+    float tw = textWidth(text[ii]);
+    float x = ii % 2 == 0 ? xo : width - tw - xo;
+    float y = ii / 2 <  1 ? yo + th : height - yo;
+    text(text[ii], x, y);
+  }
+}
+
+float largeText(String[] text)
+{
+  float th = max(40.0, width * 100 / 1484.0);
+  textSize(th);
+  int yo = (int)(th / 10.0);
+  int xo = (int)(th / 10.0);
+  
+  for(int ii = 0; ii < 4; ii++)
+  {
+    float tw = textWidth(text[ii]);
+    float x = ii % 2 == 0 ? xo : width - tw - xo;
+    float y = ii / 2 <  1 ? th : height - yo;
+    text(text[ii], x, y);
   }
   
-  void display(Particle[] particles, int me, float minv, float maxv, int cmode) {
-    // Don't display if invalid values or we're off-screen
-    if(loc.x > -size && loc.x < (width + size) &&
-        loc.y > -size && loc.y < (height + size))
-    {
-      float c = 180;
-      
-      // Color based on coloring arg using minv and maxv for ranges
-      switch(cmode)
-      {
-        case 0: // color by size
-        {
-          c = 36 + (((size - minv) / (maxv - minv)) * (360 - 36));          
-        }
-        break;
-        
-        case 1: // color by speed
-        {
-          c = 36 + (((vel.mag() - minv) / (maxv - minv)) * (360 - 36));
-        }
-        break;
-        
-        case 2: // color by direction
-        {
-          PVector ref = new PVector(width / 2, height / 2);
-          ref.sub(loc);
-          float rh = (ref.heading() - PI - vel.heading() + TAU + TAU) % TAU;
-          c = 36 + ((rh / TAU) * (360 - 36));
-        }
-        break;
-        
-        case 3: // color by heat
-        {
-          // c = 240 + (((heat - minv) / (maxv - minv)) * (360 - 240));
-          c = (240 + (168.0 * heat / 500.0)) % 360;
-        }
-        break;
-      }
- 
-      stroke(c, 100, 100, 100);
-      
-      // Draw the point
-      float s = (10 * sFactor) + (8 * size);
-      strokeWeight(s);
-      point(loc.x, loc.y);
-      
-      // Draw the vector
-      strokeWeight(1.0);
-      line(loc.x, loc.y, loc.x + (vel.x / 10.0), loc.y + (vel.y / 10.0));
-      
-      // add join action
-      if(ani > 0)
-      {
-        stroke(180, 100, 100, 100);
-        strokeWeight(2.0);
-        fill(0);
-        ellipse(loc.x, loc.y, sFactor * 10 * (size + (gAni - ani)), sFactor * 10 * (size + (gAni - ani)));
-        time--;
-        if(time <= 0)
-        {
-          ani--;
-          time = (int)size;
-        }
-      }
-    }
+  return th;
+}
+
+String getRunTime()
+{
+  int secs = getTime();
+  if(secs < startSecs)
+  {
+    startSecs -= 86400;
   }
+  
+  secs = secs - startSecs;
+    
+  int hours = floor(secs / 3600);
+  secs = secs % 3600;
+  int mins = floor(secs / 60);
+  secs = secs % 60;
+  
+  return getN(hours, 2) + ":" + 
+         getN(mins, 2) + ":" + 
+         getN(secs, 2);
+}
+
+String getN(int n, int length)
+{
+  String result = "" + n;
+  
+  while(result.length() < length)
+  {
+    result = "0" + result;
+  }
+  
+  return result;
+}
+
+int getTime()
+{
+  return second() + (minute()*60) + (hour()*3600);
 }
