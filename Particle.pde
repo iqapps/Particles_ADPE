@@ -51,7 +51,7 @@ class Particle {
     PVector pull = new PVector((width / 2) - loc.x, (height / 2) - loc.y);
     pull.mult(0.005);
     att = new PVector(0,0);
-    float maxA = 0;
+    float hAdd = 0;
     
     for (int i = 0; i < particles.length; i ++)
     {
@@ -65,17 +65,17 @@ class Particle {
 
         if(i < me && drag.mag() < s && weight > 0)
         {
-          println("join " + me + " and " + i);
+          // println("join " + me + " and " + i);
           newSize = (float)Math.cbrt(3 * w / (4 * PI));
           p.display = false;
           setAni(gAni);
-          heat += 1 * vel.mag() * vel.mag() * min(p.weight(), weight()) / w;
+          heat += (0.1F * (vel.mag() + p.vel.mag()) * (p.weight() + weight())) / w;
         }
  
         float dist = drag.mag();
-        maxA = max(dist, maxA);
         drag.normalize();
         drag.mult(weight * p.weight() / pow(dist, factor));
+        hAdd = max(drag.mag(), hAdd);      
         att.add(drag);
       }
     }
@@ -85,14 +85,13 @@ class Particle {
     vel.add(pull);
     vel.limit(1000 * sFactor);
     
-    float sf = 400.0 * size * sFactor;
+    float sf = 100.0 * weight() * sFactor;
     heat *= (sf - 1) / sf;
-    heat += 0.01 * maxA / (weight() * sFactor);
-    //heat += 0.0001 * hv / sFactor;
+    heat += 10F * hAdd / (weight() * sFactor);
     heat = min(500, max(0, heat));
   }
   
-  void display(Particle[] particles, int me, float minv, float maxv, int coloring) {
+  void display(Particle[] particles, int me, float minv, float maxv, int cmode) {
     // Don't display if invalid values or we're off-screen
     if(loc.x > -size && loc.x < (width + size) &&
         loc.y > -size && loc.y < (height + size))
@@ -100,7 +99,7 @@ class Particle {
       float c = 180;
       
       // Color based on coloring arg using minv and maxv for ranges
-      switch(coloring)
+      switch(cmode)
       {
         case 0: // color by size
         {
