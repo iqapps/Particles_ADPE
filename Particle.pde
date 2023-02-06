@@ -18,7 +18,10 @@ class Particle {
     // default values
     sFactor = min(width, height) * 1.0 / 1440.0;
     loc = new PVector(x, y);
-    vel = new PVector(r(200 * sFactor), r(200 * sFactor));
+    PVector head = new PVector(loc.x - (width / 2), loc.y - (height / 2));
+    head.mult(r(1000 * sFactor));
+    head.rotate(HALF_PI / -2);
+    vel = head; //new PVector(r(200 * sFactor), r(200 * sFactor));
     display = true;
     size = sFactor;
     newSize = sFactor;
