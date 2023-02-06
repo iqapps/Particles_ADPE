@@ -56,9 +56,9 @@ class Slider
     if (mousePressed)
     {
       if (touches[0].x >= x     && 
-        touches[0].x <= x + w &&
-        touches[0].y >= y     &&
-        touches[0].y <= y + h)
+          touches[0].x <= x + w &&
+          touches[0].y >= y     &&
+          touches[0].y <= y + h)
       {
         active = true;
       }

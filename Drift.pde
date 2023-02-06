@@ -73,9 +73,9 @@ void setup()
   if (sliders.size() == 0)
   {
     sliders.add(new Slider("Density", 0, 1, 50, 25, 0, qh, qw / 4, height - qh - qh));
-    sliders.add(new Slider("Density", 1, 1, 50, 25, width - (qw / 4), qh, qw / 4, height - qh - qh));
-    sliders.add(new Slider("Density", 2, 1, 50, 25, qw, 0, width - qw - qw, qh / 2));
-    sliders.add(new Slider("Density", 3, 1, 50, 25, qw, height - ( qh / 2), width - qw - qw, qh / 2));
+    //sliders.add(new Slider("Density", 1, 1, 50, 25, width - (qw / 4), qh, qw / 4, height - qh - qh));
+    //sliders.add(new Slider("Density", 2, 1, 50, 25, qw, 0, width - qw - qw, qh / 2));
+    //sliders.add(new Slider("Density", 3, 1, 50, 25, qw, height - ( qh / 2), width - qw - qw, qh / 2));
   }
 }
 
@@ -135,11 +135,11 @@ void handleTouch()
 
     for (Button b : buttons)
     {
-      b.alpha -= 0.001;
+      b.alpha -= 0.005;
     }
     for (Slider s : sliders)
     {
-      s.alpha -= 0.001;
+      s.alpha -= 0.005;
     }
   } else
   {
@@ -212,13 +212,13 @@ void handleUI()
         weight = (int)s.value;
         break;
       case 1:
-        weight = (int)s.value;
+        //weight = (int)s.value;
         break;
       case 2:
-        weight = (int)s.value;
+        //weight = (int)s.value;
         break;
       case 3:
-        weight = (int)s.value;
+        //weight = (int)s.value;
         break;
       }
     }
