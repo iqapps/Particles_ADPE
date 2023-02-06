@@ -1,5 +1,7 @@
-
-
+/*
+  A ui slider to set or show a value by
+  touch, hold, slide, release movement.
+*/
 class Slider
 {
   String title = "Slider";
