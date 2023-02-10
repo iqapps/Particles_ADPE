@@ -1,4 +1,4 @@
-	// Particle class
+// Particle class
 class Particle {
   PVector loc; // location
   PVector vel; // velocity
@@ -18,10 +18,11 @@ class Particle {
     // default values
     sFactor = min(width, height) * 1.0 / 1440.0;
     loc = new PVector(x, y);
-    PVector head = new PVector(loc.x - (width / 2), loc.y - (height / 2));
-    head.mult(r(1000 * sFactor));
-    head.rotate(HALF_PI / -2);
-    vel = head; //new PVector(r(200 * sFactor), r(200 * sFactor));
+    vel = new PVector(x, y);
+    vel.normalize();
+    vel.mult(500);
+    //vel.mult(r(1000 * sFactor));
+    vel.rotate(HALF_PI);
     display = true;
     size = sFactor;
     newSize = sFactor;
@@ -48,11 +49,11 @@ class Particle {
     return 4 * PI * newSize * newSize * newSize / 3;
   }
   
-  void update(Particle[] particles, int me, int weight, float factor)
+  void update(int millis, Particle[] particles, int me, int weight, float factor, float centerG)
   {
     // Re-calculate acceleration
-    PVector pull = new PVector((width / 2) - loc.x, (height / 2) - loc.y);
-    pull.mult(0.005);
+    PVector pull = new PVector(-loc.x, -loc.y);
+    pull.mult(centerG);
     att = new PVector(0,0);
     float hAdd = 0;
     
@@ -94,10 +95,10 @@ class Particle {
     heat = min(500, max(0, heat));
   }
   
-  void display(Particle[] particles, int me, float minv, float maxv, int cmode) {
+  void display(int millis, Particle[] particles, int me, float minv, float maxv, int cmode) {
     // Don't display if invalid values or we're off-screen
-    if(loc.x > -size && loc.x < (width + size) &&
-        loc.y > -size && loc.y < (height + size))
+    if(abs(loc.x) < ((width / 2) + size) &&
+       abs(loc.y) < ((height / 2) + size))
     {
       float c = 180;
       
@@ -118,7 +119,7 @@ class Particle {
         
         case 2: // color by direction
         {
-          PVector ref = new PVector(width / 2, height / 2);
+          PVector ref = new PVector(0, 0);
           ref.sub(loc);
           float rh = (ref.heading() - PI - vel.heading() + TAU + TAU) % TAU;
           c = 36 + ((rh / TAU) * (360 - 36));
@@ -137,6 +138,10 @@ class Particle {
       
       // Draw the point
       float s = (10 * sFactor) + (8 * size);
+      
+      pushMatrix();
+      translate(sCenter.x, sCenter.y);
+      
       strokeWeight(s);
       point(loc.x, loc.y);
       
@@ -158,6 +163,8 @@ class Particle {
           time = (int)size;
         }
       }
+      
+      popMatrix();
     }
   }
 }

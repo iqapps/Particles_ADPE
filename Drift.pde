@@ -28,18 +28,21 @@ int startSecs;
 int about = 0;
 AboutText at;
 boolean touch = false;
+float centerG = 0.005;
 
-int weight;
+int weight = 25;
 float factor;
 
 float maxSs = 0;
 float fRate = 0;
 
+int millis = 0;
+PVector sCenter;
+
 void setup() 
 {
   maxSs = 0;
   rmode = 0;
-  weight = 25;
   factor = 1.9;
 
   // Use this size and use OpenGL
@@ -58,6 +61,8 @@ void setup()
   at = new AboutText();
 
   frameRate(2000.0);
+  
+  sCenter = new PVector(width / 2f, height / 2f);
 
   float qw = width / 3;
   float qh = height / 8;
@@ -72,9 +77,9 @@ void setup()
 
   if (sliders.size() == 0)
   {
-    sliders.add(new Slider("Density", 0, 1, 50, 25, 0, qh, qw / 4, height - qh - qh));
-    //sliders.add(new Slider("Density", 1, 1, 50, 25, width - (qw / 4), qh, qw / 4, height - qh - qh));
-    //sliders.add(new Slider("Density", 2, 1, 50, 25, qw, 0, width - qw - qw, qh / 2));
+    sliders.add(new Slider("Density",   0,     1,  100,     25,    1,                0, qh, qw / 4, height - qh - qh));
+    sliders.add(new Slider("Pull",      1, 0.001, 0.01,  0.005, 1000, width - (qw / 4), qh, qw / 4, height - qh - qh));
+    //sliders.add(new Slider("Pull",    2, 0, 0.01, 0.005, qw, 0, width - qw - qw, qh / 2));
     //sliders.add(new Slider("Density", 3, 1, 50, 25, qw, height - ( qh / 2), width - qw - qw, qh / 2));
   }
 }
@@ -83,13 +88,8 @@ void initParticles()
 {
   // Reset to a grid of particles
 
-  // Space between particles
-  //int wh = min(width, height);
   // Number of particles that will fit
   int d = (int)round(sqrt(initObjects));
-  int dxy = 0; //(int)(wh / d);
-  int xo = (width - (dxy * d)) / 2;
-  int yo = (height - (dxy * d)) / 2;
 
   // Initialize particle array
   particles = new Particle[d * d];
@@ -104,11 +104,7 @@ void initParticles()
       float dx = cos(a) * r;
       float dy = sin(a) * r;
       
-      //float dx = 50 * (random(1.0) - 0.5);
-      //float dy = 50 * (random(1.0) - 0.5);
-
-      // particles[cur] = new Particle(xo + dx + (x * dxy), yo + dy + (y * dxy));
-      particles[cur] = new Particle(xo + dx, yo + dy);
+      particles[cur] = new Particle(dx, dy);
       //particles[cur].vel.rotate(HALF_PI / 2);
       cur ++;
     }
@@ -117,17 +113,20 @@ void initParticles()
 
 void draw()
 {
+  millis = millis() - millis;
+  if(millis < 0) millis += 1000;
+  
   if (about > 1)
   {
-    drawAbout();
+    drawAbout(millis);
   } else
   {
-    drawSpheres();
-    handleTouch();
+    drawSpheres(millis);
+    handleTouch(millis);
   }
 }
 
-void handleTouch()
+void handleTouch(int millis)
 {
   if (touch == false)
   {
@@ -135,11 +134,11 @@ void handleTouch()
 
     for (Button b : buttons)
     {
-      b.alpha -= 0.005;
+      b.alpha *= 0.995;
     }
     for (Slider s : sliders)
     {
-      s.alpha -= 0.005;
+      s.alpha *= 0.995;
     }
   } else
   {
@@ -154,7 +153,7 @@ void handleTouch()
   }
 }
 
-void drawAbout()
+void drawAbout(int millis)
 {
   try
   {
@@ -166,7 +165,7 @@ void drawAbout()
   }
 }
 
-void handleUI()
+void handleUI(int millis)
 {
   touch = false;
   
@@ -211,11 +210,11 @@ void handleUI()
       case 0:
         weight = (int)s.value;
         break;
-      case 1:
-        //weight = (int)s.value;
-        break;
       case 2:
         //weight = (int)s.value;
+        break;
+      case 1:
+        centerG = s.value;
         break;
       case 3:
         //weight = (int)s.value;
@@ -224,17 +223,32 @@ void handleUI()
     }
     else
     {
-      s.value = weight;
+      switch(s.id)
+      {
+      case 0:
+        s.value = weight;
+        break;
+      case 2:
+        //weight = (int)s.value;
+        break;
+      case 1:
+        s.value = centerG;
+        break;
+      case 3:
+        //weight = (int)s.value;
+        break;
+      }
     }
   }
 }
 
-void drawSpheres() 
+void drawSpheres(int millis) 
 {
   try
   {
     float minv = 3000.0;
     float maxv = 0.0;
+    PVector center = new PVector();
 
     // Cycle through the particles
     for (int i = 0; i < particles.length; i ++) 
@@ -243,17 +257,12 @@ void drawSpheres()
 
       if (pi.display)
       {
-        particles[i].update(particles, i, weight, factor);
-        //speedSum += particles[i].vel.mag();
+        particles[i].update(millis, particles, i, weight, factor, centerG);
+        center.add(particles[i].loc);
       }
     }
-
-    //maxSs = max(maxSs, speedSum);
-
-    //if ((speedSum * 3) < maxSs)
-    //{
-    //  weight = abs(weight);
-    //}
+    
+    center.mult(0.0003);
 
     // Cycle through the particles
     for (int i = 0; i < particles.length; i ++) 
@@ -263,6 +272,7 @@ void drawSpheres()
       if (pi.display)
       {
         particles[i].size = particles[i].newSize;
+        particles[i].loc.sub(center);
       }
     }
 
@@ -314,7 +324,7 @@ void drawSpheres()
       display = dispcnt;
       background(0);
 
-      handleUI();
+      handleUI(millis);
 
       int objects = 0;
 
@@ -324,7 +334,7 @@ void drawSpheres()
 
         if (pi.display)
         {
-          pi.display(particles, i, minv, maxv, cmode);
+          pi.display(millis, particles, i, minv, maxv, cmode);
           objects++;
         }
       }

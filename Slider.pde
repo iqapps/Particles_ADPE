@@ -1,7 +1,7 @@
 /*
   A ui slider to set or show a value by
-  touch, hold, slide, release movement.
-*/
+ touch, hold, slide, release movement.
+ */
 class Slider
 {
   String title = "Slider";
@@ -11,6 +11,7 @@ class Slider
   float value = 0;
   float vMin = 0;
   float vMax = 100;
+  float factor = 1;
 
   float x = 0;
   float y = 0;
@@ -22,20 +23,20 @@ class Slider
 
   boolean active = false;
 
-  Slider(String titleArg, int idArg, float minV, float maxV, float initV, float xArg, float yArg, float wArg, float hArg)
+  Slider(String titleArg, int idArg, float minV, float maxV, float initV, float factorArg, float xArg, float yArg, float wArg, float hArg)
   {
     title = titleArg;
     id = idArg;
     vMin = minV;
     vMax = maxV;
     value = initV;
+    factor = factorArg;
 
     x = xArg;
     y = yArg;
     w = wArg;
     h = hArg;
 
-    pushStyle();
     textSize(textsize);
     float tw = textWidth(title);
 
@@ -44,15 +45,11 @@ class Slider
       textsize = textsize * (w * 0.8) / tw;
       textSize(textsize);
     }
-
-    popStyle();
   }
 
   // update and draw slider, return tue if slider change value
   boolean draw()
   {
-    boolean result = false;
-
     if (mousePressed)
     {
       if (touches[0].x >= x     && 
@@ -61,26 +58,21 @@ class Slider
           touches[0].y <= y + h)
       {
         active = true;
-      }
-
-      if (active)
-      {
+        
         if (w > h)
         {
           float t = (vMax - vMin) / w;
           value = vMin + (touches[0].x - x) * t;
-        } 
-        else
+        } else
         {
           float t = (vMax - vMin) / h;
           value = vMin + (touches[0].y - y) * t;
         }
 
         value = min(vMax, max(vMin, value));
-        result = true;
-        ;
       }
-    } else
+    } 
+    else
     {
       active = false;
     }
@@ -89,11 +81,23 @@ class Slider
 
     float tox = x + w;
     float toy = y + h;
-    
+
     float sw = (w - sliderWidth) / (vMax - vMin);
     float fromx = x + (sliderWidth / 2) + ((value - vMin) * sw);
     float sh = (h - sliderWidth) / (vMax - vMin);
     float fromy = y + (sliderWidth / 2) + ((value - vMin) * sh);
+
+    stroke(100, 100, 100, 50.0 + (alpha * 50.0));
+    strokeWeight(sliderWidth);
+
+    if (w  > h)
+    {
+      line(fromx, y, fromx, toy);
+    } 
+    else
+    {
+      line(x, fromy, tox, fromy);
+    }
 
     if (alpha > 0)
     {
@@ -103,40 +107,41 @@ class Slider
       strokeWeight(2.0);
       rect(x, y, w, h);
 
-      fill(100, 100, 100, alpha * 100);
-      strokeWeight(sliderWidth);
       float tw = textWidth(title);
+      fill(100, 100, 100, alpha * 100);
 
       if (w > h)
       {
         text(title, x, y + (y < (height / 2) ? h + textsize : -(textsize / 5)));
-        line(fromx, y, fromx, toy);
       } 
       else
       {
         text(title, x + ((w - tw) / 2), y + textsize);
-        line(x, fromy, tox, fromy);
       }
     }
 
-    fill(100, 100, 100, 100);
-    String n = nf(value, 1, 2);
-    float posx = 0;
-    float posy = 0;
+    if (active)
+    {
+      fill(100, 100, 100, 100);
+      String n = nf(value * factor, 1, 1);
+      float posx = 0;
+      float posy = 0;
 
-    if (w > h)
-    {
-      posx = fromx - (textWidth(n) / 2);
-      posy = y + textsize + ((h - textsize) / 2) + (active ? (y > (height / 2) ? -200 : 200) : 0);
-    } 
-    else
-    {
-      posx = x + (active ? (x > (width / 2) ? - 200 : 200 ) : ((w - textWidth(n)) / 2));
-      posy = fromy + (textsize / 2);
+      if (w > h)
+      {
+        posx = fromx - (textWidth(n) / 2);
+        posy = y + textsize + ((h - textsize) / 2) + (active ? (y > (height / 2) ? -200 : 200) : 0);
+      } else
+      {
+        posx = x + (active ? (x > (width / 2) ? - 200 : 200 ) : ((w - textWidth(n)) / 2));
+        posy = fromy + (textsize / 2);
+      }
+
+      text(n, posx, posy);
     }
-
-    text(n, posx, posy);
+    
     popStyle();
-    return result;
+    
+    return active;
   }
 }
