@@ -4,9 +4,10 @@ class Particle {
   PVector vel; // velocity
   PVector att;
   float heat = 0;
-  float size = 1;
+  float mass = 1;
+  float size;
   boolean display;
-  float newSize = 1;
+  float newMass = 1;
   int ani = 0;
   int time = 0;
   int gAni = 10;
@@ -24,8 +25,8 @@ class Particle {
     //vel.mult(r(1000 * sFactor));
     vel.rotate(HALF_PI);
     display = true;
-    size = sFactor;
-    newSize = sFactor;
+    mass = sFactor;
+    newMass = sFactor;
   }
   
   float r(float s)
@@ -39,17 +40,23 @@ class Particle {
     time = 0;
   }
   
-  float weight()
+  float radius(float mass)
   {
-    return 4 * PI * size * size * size / 3;
+    return pow(3 * mass / (4 * PI), 1.0/3.0);
   }
   
-  float newWeight()
+  float newSize()
   {
-    return 4 * PI * newSize * newSize * newSize / 3;
+    return 2 * radius(newMass);
   }
   
-  void update(int millis, Particle[] particles, int me, int weight, float factor, float centerG)
+  void updateMass()
+  {
+    mass = newMass;
+    size = 2 * radius(mass);
+  }
+  
+  void update(int millis, Particle[] particles, int me, int density, float factor, float centerG)
   {
     // Re-calculate acceleration
     PVector pull = new PVector(-loc.x, -loc.y);
@@ -64,21 +71,20 @@ class Particle {
       if(p.display && i != me)
       {
         PVector drag = new PVector(p.loc.x - loc.x, p.loc.y - loc.y);
-        float w = newWeight() + p.weight();
-        float s = (size + p.size) / 2.0;
+        float m = newMass + p.mass;
 
-        if(i < me && drag.mag() < s && weight > 0)
+        if(i < me && drag.mag() < size && density > 0)
         {
           // println("join " + me + " and " + i);
-          newSize = (float)Math.cbrt(3 * w / (4 * PI));
+          newMass = m;
           p.display = false;
           setAni(gAni);
-          heat += (0.1F * (vel.mag() + p.vel.mag()) * (p.weight() + weight())) / w;
+          heat += 0.1F * p.vel.mag() * p.mass / m;
         }
  
         float dist = drag.mag();
         drag.normalize();
-        drag.mult(weight * p.weight() / pow(dist, factor));
+        drag.mult(density * p.mass / pow(dist, factor));
         hAdd = max(drag.mag(), hAdd);      
         att.add(drag);
       }
@@ -89,9 +95,9 @@ class Particle {
     vel.add(pull);
     vel.limit(1000 * sFactor);
     
-    float sf = 100.0 * weight() * sFactor;
+    float sf = 100.0 * mass * sFactor;
     heat *= (sf - 1) / sf;
-    heat += 10F * hAdd / (weight() * sFactor);
+    heat += 10F * hAdd / (mass * sFactor);
     heat = min(500, max(0, heat));
   }
   
@@ -107,13 +113,13 @@ class Particle {
       {
         case 0: // color by size
         {
-          c = 36 + (((size - minv) / (maxv - minv)) * (360 - 36));          
+          c = colorMap(size - minv, maxv - minv);          
         }
         break;
         
         case 1: // color by speed
         {
-          c = 36 + (((vel.mag() - minv) / (maxv - minv)) * (360 - 36));
+          c = colorMap(vel.mag() - minv, maxv - minv);
         }
         break;
         
@@ -121,20 +127,20 @@ class Particle {
         {
           PVector ref = new PVector(0, 0);
           ref.sub(loc);
-          float rh = (ref.heading() - PI - vel.heading() + TAU + TAU) % TAU;
-          c = 36 + ((rh / TAU) * (360 - 36));
+          float rh = abs((ref.heading() - vel.heading() + TAU) % TAU);
+          rh = rh > PI ? TAU - rh : rh;
+          c = colorMap(rh, PI);
         }
         break;
         
         case 3: // color by heat
         {
-          // c = 240 + (((heat - minv) / (maxv - minv)) * (360 - 240));
-          c = (240 + (168.0 * heat / 500.0)) % 360;
+          c = colorMap(heat, 500);
         }
         break;
       }
  
-      stroke(c, 100, 100, 100);
+      stroke(c, maxSat, maxBgt, maxAlp);
       
       // Draw the point
       float s = (10 * sFactor) + (8 * size);
@@ -152,7 +158,7 @@ class Particle {
       // add join action
       if(ani > 0)
       {
-        stroke(180, 100, 100, 100);
+        stroke(180, maxSat, maxBgt, maxAlp);
         strokeWeight(2.0);
         fill(0);
         ellipse(loc.x, loc.y, sFactor * 10 * (size + (gAni - ani)), sFactor * 10 * (size + (gAni - ani)));
@@ -166,5 +172,10 @@ class Particle {
       
       popMatrix();
     }
+  }
+  
+  float colorMap(float v, float maxV)
+  {
+    return (60 + map(v, 0, maxV, 180, 360)) % 360;
   }
 }

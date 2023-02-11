@@ -50,6 +50,8 @@ class Slider
   // update and draw slider, return tue if slider change value
   boolean draw()
   {
+    float alpha = dimmAlpha;
+    
     if (mousePressed)
     {
       if (touches[0].x >= x     && 
@@ -87,18 +89,6 @@ class Slider
     float sh = (h - sliderWidth) / (vMax - vMin);
     float fromy = y + (sliderWidth / 2) + ((value - vMin) * sh);
 
-    stroke(100, 100, 100, 50.0 + (alpha * 50.0));
-    strokeWeight(sliderWidth);
-
-    if (w  > h)
-    {
-      line(fromx, y, fromx, toy);
-    } 
-    else
-    {
-      line(x, fromy, tox, fromy);
-    }
-
     if (alpha > 0)
     {
       textSize(textsize);
@@ -118,11 +108,8 @@ class Slider
       {
         text(title, x + ((w - tw) / 2), y + textsize);
       }
-    }
 
-    if (active)
-    {
-      fill(100, 100, 100, 100);
+      fill(100, 100, 100, alpha * 100);
       String n = nf(value * factor, 1, 1);
       float posx = 0;
       float posy = 0;
@@ -138,6 +125,19 @@ class Slider
       }
 
       text(n, posx, posy);
+    }
+    else
+    {
+      stroke(100, 100, 100, 50.0 + (alpha * 50.0));
+      strokeWeight(sliderWidth);
+      if (w > h)
+      {
+        line(fromx, y, fromx, toy);
+      } 
+      else
+      {
+        line(x, fromy, tox, fromy);
+      }
     }
     
     popStyle();

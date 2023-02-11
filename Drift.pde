@@ -22,15 +22,13 @@ ArrayList<Button> buttons = new ArrayList<Button>();
 ArrayList<Slider> sliders = new ArrayList<Slider>();
 
 int initObjects = 361;
-int dispcnt = 1;
-int display = dispcnt;
 int startSecs;
 int about = 0;
 AboutText at;
 boolean touch = false;
 float centerG = 0.005;
 
-int weight = 25;
+int density = 25;
 float factor;
 
 float maxSs = 0;
@@ -38,6 +36,14 @@ float fRate = 0;
 
 int millis = 0;
 PVector sCenter;
+
+final int maxHue = 360;
+final int maxSat = 100;
+final int maxBgt = 100;
+final int maxAlp = 100;
+
+static float dimmAlpha = 1;
+static float dimmSecs = 2.5;
 
 void setup() 
 {
@@ -52,7 +58,7 @@ void setup()
   noiseDetail(16, 0.6);
 
   // Use HSB
-  colorMode(HSB, 360, 100, 100, 100);
+  colorMode(HSB, maxHue, maxSat, maxBgt, maxAlp);
   background(0);
   strokeWeight(12);
 
@@ -131,25 +137,19 @@ void handleTouch(int millis)
   if (touch == false)
   {
     about *= 2;
-
-    for (Button b : buttons)
+    
+    if(dimmAlpha > 0)
     {
-      b.alpha *= 0.995;
+      dimmAlpha -= 1 / (dimmSecs * frameRate);
     }
-    for (Slider s : sliders)
+    else
     {
-      s.alpha *= 0.995;
+      dimmAlpha = 0;
     }
-  } else
+  } 
+  else
   {
-    for (Button b : buttons)
-    {
-      b.alpha = 1;
-    }
-    for (Slider s : sliders)
-    {
-      s.alpha = 1;
-    }
+    dimmAlpha = 1;
   }
 }
 
@@ -208,7 +208,7 @@ void handleUI(int millis)
       switch(s.id)
       {
       case 0:
-        weight = (int)s.value;
+        density = (int)s.value;
         break;
       case 2:
         //weight = (int)s.value;
@@ -226,7 +226,7 @@ void handleUI(int millis)
       switch(s.id)
       {
       case 0:
-        s.value = weight;
+        s.value = density;
         break;
       case 2:
         //weight = (int)s.value;
@@ -257,7 +257,7 @@ void drawSpheres(int millis)
 
       if (pi.display)
       {
-        particles[i].update(millis, particles, i, weight, factor, centerG);
+        particles[i].update(millis, particles, i, density, factor, centerG);
         center.add(particles[i].loc);
       }
     }
@@ -271,17 +271,9 @@ void drawSpheres(int millis)
 
       if (pi.display)
       {
-        particles[i].size = particles[i].newSize;
+        particles[i].updateMass();
         particles[i].loc.sub(center);
-      }
-    }
 
-    for (int i = 0; i < particles.length; i ++)
-    {
-      Particle pi = particles[i];
-
-      if (pi.display)
-      {
         switch(cmode)
         {
         case 0:
@@ -305,23 +297,12 @@ void drawSpheres(int millis)
           }
           break;
         }
-      }
-    }
 
-    for (int i = 0; i < particles.length; i++)
-    { 
-      Particle pi = particles[i];
-
-      if (pi.display)
-      {
         pi.loc.x += pi.vel.x / particles.length;
         pi.loc.y += pi.vel.y / particles.length;
       }
     }
 
-    if (display <= 0)
-    {
-      display = dispcnt;
       background(0);
 
       handleUI(millis);
@@ -341,16 +322,14 @@ void drawSpheres(int millis)
 
       String sm = smode == 0 ? getRunTime() : (smode == 1 ? nf(int(fRate), 0) : nf(width, 0)+","+nf(height, 0));
 
-      fill(100, 100, 100);
+      fill(100, maxSat, maxBgt);
       String[] lt = {str(objects), sm, cmodes[cmode], rmodes[rmode > 0 ? 1 : 0]};
       float lth = largeText(lt);
 
-      fill(180, 100, 100);
-      String st[] = {"Spheres", smodes[smode], "Color Mode", "touch twice to reset"};
+      fill(180, maxSat, maxBgt);
+      String st[] = {"Objects", smodes[smode], "Color Mode", "touch twice to reset"};
       smallText(st, lth);
-    }
 
-    display--;
     rmode -= rmode > 0 ? 1 : 0;
     fRate = (fRate * 49 + frameRate) / 50;
   }

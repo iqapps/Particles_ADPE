@@ -7,7 +7,6 @@ class Button
   float y = 0;
   float w = 200;
   float h = 100;
-  float alpha = 1.0;
 
   Button(String titleArg, int idArg, float xArg, float yArg, float wArg, float hArg)
   {
@@ -21,6 +20,7 @@ class Button
 
   boolean draw()
   {
+    float alpha = dimmAlpha;
     boolean result = false;
 
     if (mousePressed)
