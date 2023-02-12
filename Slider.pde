@@ -50,7 +50,7 @@ class Slider
   // update and draw slider, return tue if slider change value
   boolean draw()
   {
-    float alpha = dimmAlpha;
+    float alpha = dimmAlpha.get();
     
     if (mousePressed)
     {
@@ -93,12 +93,12 @@ class Slider
     {
       textSize(textsize);
       fill(0);
-      stroke(100, 100, 100, alpha * 100);
+      stroke(0.277, 1.0, 1.0, alpha);
       strokeWeight(2.0);
       rect(x, y, w, h);
 
       float tw = textWidth(title);
-      fill(100, 100, 100, alpha * 100);
+      fill(0.277, 1.0, 1.0, alpha);
 
       if (w > h)
       {
@@ -109,7 +109,7 @@ class Slider
         text(title, x + ((w - tw) / 2), y + textsize);
       }
 
-      fill(100, 100, 100, alpha * 100);
+      fill(0.277, 1.0, 1.0, alpha);
       String n = nf(value * factor, 1, 1);
       float posx = 0;
       float posy = 0;
@@ -128,7 +128,7 @@ class Slider
     }
     else
     {
-      stroke(100, 100, 100, 50.0 + (alpha * 50.0));
+      stroke(0.277, 1.0, 1.0, 0.5 + (alpha * 0.5));
       strokeWeight(sliderWidth);
       if (w > h)
       {

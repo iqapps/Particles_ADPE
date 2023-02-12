@@ -1,41 +1,49 @@
 class Reference<T>
 {
   private T value;
-  public T get() { return value; }
-  void set(T vArg) { value = vArg; }
+
   Reference(T vArg) { value = vArg; }
+
+  public T get() { return value; }
+  public void set(T vArg) { value = vArg; }
 }
 
 class ControlSettings
 {
-  private String title = "";
+  public String title = "";
   private int id = 0;
-  
+
   private int x = 0;
   private int y = 0;
   private int w = 100;
   private int h = 100;
 
-  private color backColor = color(0);
-  private color foreColor = color(0, 0, maxBgt, maxAlp);;
+  private float backHue = 0.3;
+  private float foreHue = 0.3;
   private float textSize = 20;
-  
-  Reference<Float> dimmAlpha = new Reference<Float>((float)maxAlp);
-  
-  ControlSettings(String txtArg, int idArg, int xArg, int yArg, int wArg, int hArg, color bcolArg, color tcolArg, int tsArg, Reference<Float> dimArg)
+
+  Reference<Float> dimmAlpha = new Reference<Float>(maxAlp);
+
+  ControlSettings(String txtArg, int idArg, int xArg, int yArg, int wArg, int hArg, float bhueArg, float fhueArg, float tsArg, Reference<Float> dimArg)
   {
+    this(idArg, xArg, yArg, wArg, hArg, bhueArg, fhueArg, tsArg, dimArg);
     title = txtArg;
-    backColor = bcolArg;
-    id = idArg;
-    x = xArg;
-    y = yArg;
-    w = wArg;
-    h = hArg;
+  } 
+
+  ControlSettings(int idArg, int xArg, int yArg, int wArg, int hArg, float bhueArg, float fhueArg, float tsArg, Reference<Float> dimArg)
+  {
+    this(idArg, xArg, yArg, wArg, hArg, dimArg);
+    backHue = bhueArg;
+    foreHue = fhueArg;
     textSize = tsArg;
-    foreColor = tcolArg;
+  } 
+
+  ControlSettings(int idArg, int xArg, int yArg, int wArg, int hArg, Reference<Float> dimArg)
+  {
+    this(idArg, xArg, yArg, wArg, hArg);
     dimmAlpha = dimArg;
   } 
-  
+
   ControlSettings(int idArg, int xArg, int yArg, int wArg, int hArg)
   {
     id = idArg;
@@ -44,25 +52,15 @@ class ControlSettings
     w = wArg;
     h = hArg;
   }
-  
-  ControlSettings(int idArg, int xArg, int yArg, int wArg, int hArg, Reference<Float> dimArg)
-  {
-    id = idArg;
-    x = xArg;
-    y = yArg;
-    w = wArg;
-    h = hArg;
-    dimmAlpha = dimArg;
-  } 
 }
 
 class ValueControlSettings<T> extends ControlSettings
 {
   Reference<T> value;
-  
-  ValueControlSettings(String txtArg, int idArg, int xArg, int yArg, int wArg, int hArg, color bcolArg, color tcolArg, int tsArg, Reference<Float> dimArg, Reference<T> vArg)
+
+  ValueControlSettings(String txtArg, int idArg, int xArg, int yArg, int wArg, int hArg, float bhueArg, float fhueArg, float tsArg, Reference<Float> dimArg, Reference<T> vArg)
   {
-    super(txtArg, idArg, xArg, yArg, wArg, hArg, bcolArg, tcolArg, tsArg, dimArg);
+    super(txtArg, idArg, xArg, yArg, wArg, hArg, bhueArg, fhueArg, tsArg, dimArg);
     value = vArg;
   }
 }
@@ -72,19 +70,12 @@ class Control
   ControlSettings s;
   float textX = 0;
   float textY = 0;
-  
+
   boolean handled = false;
 
   Control(ControlSettings settings)
   {
     s = settings;
-
-    pushStyle();
-
-    textSize(s.textSize);
-    float tw = textWidth(s.title);
-
-    popStyle();
   }
 
   public boolean draw()
@@ -92,30 +83,23 @@ class Control
     pushStyle();
 
     textSize(s.textSize);
-    
+
     if (s.dimmAlpha.get() > 0)
     {
       float hsw = 1;
-      stroke(s.foreColor, s.dimmAlpha.get() * 100);
       strokeWeight(2 * hsw);
-      fill(s.backColor);
+      fill(s.backHue);
+
+      stroke(s.foreHue, 1.0, 1.0, s.dimmAlpha.get());
       rect(s.x + hsw, s.y + hsw, s.w - hsw - hsw, s.h - hsw - hsw);
     }
 
-    fill(s.foreColor, s.dimmAlpha.get() == 0 ? maxAlp / 2 : maxAlp);
+    fill(s.foreHue, 1.0, 1.0, s.dimmAlpha.get() == 0 ? 0.5 : 1.0);
+    //s.title = nf(s.dimmAlpha.get(),1,3);
     float tw = textWidth(s.title);
+    textX = s.x + ((s.w - tw) / 2);
+    textY = s.y + (s.y > height / 2 ? s.h - (s.textSize * 0.3) : s.textSize);
 
-    if (s.w > s.h)
-    {
-      textX = s.x;
-      textY = s.y + (s.y < (height / 2) ? s.h + s.textSize : -(s.textSize / 5));
-    } 
-    else
-    {
-      textX = s.x + ((s.w - tw) / 2);
-      textY = s.y + s.textSize;
-    }
-    
     text(s.title, textX, textY);
 
     popStyle();
@@ -140,8 +124,7 @@ class Control
           handled = true;
         }
       }
-    } 
-    else
+    } else
     {
       if (handled)
       {

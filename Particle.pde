@@ -109,7 +109,7 @@ class Particle
     if(abs(loc.x) < ((width / 2) + size) &&
        abs(loc.y) < ((height / 2) + size))
     {
-      float c = 180;
+      float c = 0.5;
       
       // Color based on coloring arg using minv and maxv for ranges
       switch(cmode)
@@ -143,7 +143,7 @@ class Particle
         break;
       }
  
-      stroke(c, maxSat, maxBgt, maxAlp);
+      stroke(c, 1.0, 1.0, 1.0);
       
       // Draw the point
       float s = (10 * sFactor) + (8 * size);
@@ -161,7 +161,7 @@ class Particle
       // add join action
       if(ani > 0)
       {
-        stroke(180, maxSat, maxBgt, maxAlp);
+        stroke(0.5, 1.0, 1.0, 1.0);
         strokeWeight(2.0);
         fill(0);
         ellipse(loc.x, loc.y, sFactor * 10 * (size + (gAni - ani)), sFactor * 10 * (size + (gAni - ani)));
@@ -179,6 +179,6 @@ class Particle
   
   float colorMap(float v, float maxV)
   {
-    return (60 + map(v, 0, maxV, 180, 360)) % 360;
+    return (0.166 + map(v, 0, maxV, 0.5, 1.0)) % 1.0;
   }
 }

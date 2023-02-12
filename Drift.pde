@@ -21,6 +21,8 @@ String smodes[] = {"Running time", "Frames per sec.", "Width,Height"};
 ArrayList<Button> buttons = new ArrayList<Button>();
 ArrayList<Slider> sliders = new ArrayList<Slider>();
 
+Reference<Float> dimmAlpha = null;
+  
 int initObjects = 361;
 int startSecs;
 int about = 0;
@@ -37,13 +39,12 @@ float fRate = 0;
 int millis = 0;
 PVector sCenter;
 
-final int maxHue = 360;
-final int maxSat = 100;
-final int maxBgt = 100;
-final int maxAlp = 100;
+final float maxHue = 1.0;
+final float maxSat = 1.0;
+final float maxBgt = 1.0;
+final float maxAlp = 1.0;
 
-static float dimmAlpha = 1;
-static float dimmSecs = 2.5;
+float dimmSecs = 2.5;
 
 void setup() 
 {
@@ -70,17 +71,20 @@ void setup()
   
   sCenter = new PVector(width / 2f, height / 2f);
 
-  int qw = width / 3;
-  int qh = height / 8;
+  int qw = width / 4;
+  int qh = height / 15;
   
-  Reference<Float> da = new Reference<Float>(dimmAlpha);
+  dimmAlpha = new Reference<Float>(maxAlp);
+
+  float cHue = 0.277;
+  float ts = 50F;
 
   if (buttons.size() == 0)
   {
-    buttons.add(new Button(new ControlSettings(0, 0, 0, qw, qh, da)));
-    buttons.add(new Button(new ControlSettings(1, 0, height - qh, qw, qh, da)));
-    buttons.add(new Button(new ControlSettings(2, width - qw, 0, qw, qh, da)));
-    buttons.add(new Button(new ControlSettings(3, width - qw, height - qh, qw, qh, da)));
+    buttons.add(new Button(new ControlSettings("Objects", 0,          0,           0, qw, qh, 0.0, cHue, ts, dimmAlpha)));
+    buttons.add(new Button(new ControlSettings("Time",    1, width - qw,           0, qw, qh, 0.0, cHue, ts, dimmAlpha)));
+    buttons.add(new Button(new ControlSettings("Color",   2,          0, height - qh, qw, qh, 0.0, cHue, ts, dimmAlpha)));
+    buttons.add(new Button(new ControlSettings("Reset",   3, width - qw, height - qh, qw, qh, 0.0, cHue, ts, dimmAlpha)));
   }
 
   if (sliders.size() == 0)
@@ -140,18 +144,18 @@ void handleTouch(int millis)
   {
     about *= 2;
     
-    if(dimmAlpha > 0)
+    if(dimmAlpha.get() > 0)
     {
-      dimmAlpha -= 1 / (dimmSecs * frameRate);
+      dimmAlpha.set(dimmAlpha.get() - (1 / (dimmSecs * frameRate)));
     }
     else
     {
-      dimmAlpha = 0;
+      dimmAlpha.set(0F);
     }
   } 
   else
   {
-    dimmAlpha = 1;
+    dimmAlpha.set(1F);
   }
 }
 
@@ -183,10 +187,10 @@ void handleUI(int millis)
         about = 1;
         break;
       case 1:
-        cmode = (cmode + 1) % cmodes.length;
+        smode = (smode + 1) % smodes.length;
         break;
       case 2:
-        smode = (smode + 1) % smodes.length;
+        cmode = (cmode + 1) % cmodes.length;
         break;
       case 3:
         if (rmode == 0)
@@ -307,8 +311,6 @@ void drawSpheres(int millis)
 
       background(0);
 
-      handleUI(millis);
-
       int objects = 0;
 
       for (int i = 0; i < particles.length; i ++)
@@ -324,13 +326,15 @@ void drawSpheres(int millis)
 
       String sm = smode == 0 ? getRunTime() : (smode == 1 ? nf(int(fRate), 0) : nf(width, 0)+","+nf(height, 0));
 
-      fill(100, maxSat, maxBgt);
+      fill(0.277, maxSat, maxBgt);
       String[] lt = {str(objects), sm, cmodes[cmode], rmodes[rmode > 0 ? 1 : 0]};
       float lth = largeText(lt);
 
-      fill(180, maxSat, maxBgt);
+      fill(0.5, maxSat, maxBgt);
       String st[] = {"Objects", smodes[smode], "Color Mode", "touch twice to reset"};
       smallText(st, lth);
+
+      handleUI(millis);
 
     rmode -= rmode > 0 ? 1 : 0;
     fRate = (fRate * 49 + frameRate) / 50;
@@ -343,33 +347,19 @@ void drawSpheres(int millis)
 
 void smallText(String[] text, float lth)
 {
-  float th = max(15.0, width * 28 / 1484.0);
-  textSize(th);
-  int yo = (int)(lth * 1.1);
-  int xo = (int)(lth / 5.0);
-
-  for (int ii = 0; ii < 4; ii++)
+  for (int ii = 0; ii < buttons.size(); ii++)
   {
-    float tw = textWidth(text[ii]);
-    float x = ii % 2 == 0 ? xo : width - tw - xo;
-    float y = ii / 2 <  1 ? yo + th : height - yo;
-    text(text[ii], x, y);
+    buttons.get(ii).subtext = text[ii];
   }
 }
 
 float largeText(String[] text)
 {
   float th = max(40.0, width * 100 / 1484.0);
-  textSize(th);
-  int yo = (int)(th / 10.0);
-  int xo = (int)(th / 10.0);
 
-  for (int ii = 0; ii < 4; ii++)
+  for (int ii = 0; ii < buttons.size(); ii++)
   {
-    float tw = textWidth(text[ii]);
-    float x = ii % 2 == 0 ? xo : width - tw - xo;
-    float y = ii / 2 <  1 ? th : height - yo;
-    text(text[ii], x, y);
+    buttons.get(ii).s.title = text[ii];
   }
 
   return th;

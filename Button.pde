@@ -21,9 +21,13 @@ class Button extends Control
     
     if(subtext != null)
     {
+      fill(s.foreHue * 2, 1.0, 1.0, s.dimmAlpha.get() == 0 ? 0.5 : 1.0);
+      // subtext = nf(s.dimmAlpha.get(), 1,3);
       textSize(s.textSize * 0.6);
-      textY += s.textSize * 0.8;
-      text(subtext +"x", textX, textY);
+      float tw = textWidth(subtext);
+      textX = s.x + ((s.w - tw) / 2);
+      textY += s.y < height / 2 ? s.textSize * 0.8 : - (s.textSize * 1.1);
+      text(subtext, textX, textY);
     }
     
     popStyle();
