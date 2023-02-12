@@ -70,15 +70,17 @@ void setup()
   
   sCenter = new PVector(width / 2f, height / 2f);
 
-  float qw = width / 3;
-  float qh = height / 8;
+  int qw = width / 3;
+  int qh = height / 8;
+  
+  Reference<Float> da = new Reference<Float>(dimmAlpha);
 
   if (buttons.size() == 0)
   {
-    buttons.add(new Button("", 0, 0, 0, qw, qh));
-    buttons.add(new Button("", 1, 0., height - qh, qw, qh));
-    buttons.add(new Button("", 2, width - qw, 0, qw, qh));
-    buttons.add(new Button("", 3, width - qw, height - qh, qw, qh));
+    buttons.add(new Button(new ControlSettings(0, 0, 0, qw, qh, da)));
+    buttons.add(new Button(new ControlSettings(1, 0, height - qh, qw, qh, da)));
+    buttons.add(new Button(new ControlSettings(2, width - qw, 0, qw, qh, da)));
+    buttons.add(new Button(new ControlSettings(3, width - qw, height - qh, qw, qh, da)));
   }
 
   if (sliders.size() == 0)
@@ -175,7 +177,7 @@ void handleUI(int millis)
     {
       touch = true;
 
-      switch(b.id)
+      switch(b.s.id)
       {
       case 0:
         about = 1;

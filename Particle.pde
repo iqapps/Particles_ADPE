@@ -1,5 +1,6 @@
 // Particle class
-class Particle {
+class Particle 
+{
   PVector loc; // location
   PVector vel; // velocity
   PVector att;
@@ -14,7 +15,8 @@ class Particle {
   int gTime = 2;
   float sFactor = 1.0;
   
-  Particle(float x, float y) {
+  Particle(float x, float y) 
+  {
     // Initialize everything to 
     // default values
     sFactor = min(width, height) * 1.0 / 1440.0;
@@ -101,7 +103,8 @@ class Particle {
     heat = min(500, max(0, heat));
   }
   
-  void display(int millis, Particle[] particles, int me, float minv, float maxv, int cmode) {
+  void display(int millis, Particle[] particles, int me, float minv, float maxv, int cmode) 
+  {
     // Don't display if invalid values or we're off-screen
     if(abs(loc.x) < ((width / 2) + size) &&
        abs(loc.y) < ((height / 2) + size))
