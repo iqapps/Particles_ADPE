@@ -6,6 +6,11 @@
  * particles. Multi-touch is supported.
  */
 
+final float maxHue = 1.0;
+final float maxSat = 1.0;
+final float maxBgt = 1.0;
+final float maxAlp = 1.0;
+
 // Array of particles
 Particle[] particles;
 
@@ -21,16 +26,16 @@ String smodes[] = {"Running time", "Frames per sec.", "Width,Height"};
 ArrayList<Button> buttons = new ArrayList<Button>();
 ArrayList<Slider> sliders = new ArrayList<Slider>();
 
-Reference<Float> dimmAlpha = null;
+Reference<Float> dimmAlpha = new Reference<Float>(maxAlp);
+Reference<Float> density = new Reference<Float>(25.0);
+Reference<Float> centerG = new Reference<Float>(0.005);
   
 int initObjects = 361;
 int startSecs;
 int about = 0;
 AboutText at;
 boolean touch = false;
-float centerG = 0.005;
 
-int density = 25;
 float factor;
 
 float maxSs = 0;
@@ -38,11 +43,6 @@ float fRate = 0;
 
 int millis = 0;
 PVector sCenter;
-
-final float maxHue = 1.0;
-final float maxSat = 1.0;
-final float maxBgt = 1.0;
-final float maxAlp = 1.0;
 
 float dimmSecs = 2.5;
 
@@ -71,10 +71,10 @@ void setup()
   
   sCenter = new PVector(width / 2f, height / 2f);
 
-  int qw = width / 4;
-  int qh = height / 15;
+  int qw = width / 5;
+  int qh = height / 12;
   
-  dimmAlpha = new Reference<Float>(maxAlp);
+  dimmAlpha.set(maxAlp);;
 
   float cHue = 0.277;
   float ts = 50F;
@@ -82,17 +82,15 @@ void setup()
   if (buttons.size() == 0)
   {
     buttons.add(new Button(new ControlSettings("Objects", 0,          0,           0, qw, qh, 0.0, cHue, ts, dimmAlpha)));
-    buttons.add(new Button(new ControlSettings("Time",    1, width - qw,           0, qw, qh, 0.0, cHue, ts, dimmAlpha)));
+    buttons.add(new Button(new ControlSettings("Status",  1, width - qw,           0, qw, qh, 0.0, cHue, ts, dimmAlpha)));
     buttons.add(new Button(new ControlSettings("Color",   2,          0, height - qh, qw, qh, 0.0, cHue, ts, dimmAlpha)));
     buttons.add(new Button(new ControlSettings("Reset",   3, width - qw, height - qh, qw, qh, 0.0, cHue, ts, dimmAlpha)));
   }
 
   if (sliders.size() == 0)
   {
-    sliders.add(new Slider("Density",   0,     1,  100,     25,    1,                0, qh, qw / 4, height - qh - qh));
-    sliders.add(new Slider("Pull",      1, 0.001, 0.01,  0.005, 1000, width - (qw / 4), qh, qw / 4, height - qh - qh));
-    //sliders.add(new Slider("Pull",    2, 0, 0.01, 0.005, qw, 0, width - qw - qw, qh / 2));
-    //sliders.add(new Slider("Density", 3, 1, 50, 25, qw, height - ( qh / 2), width - qw - qw, qh / 2));
+    sliders.add(new Slider(new ValueControlSettings<Float>("Density", 0,                0, qh, qw / 4, height - qh - qh, 0.0, cHue, ts, dimmAlpha, density,   1.0, 250.0,    1.0)));
+    sliders.add(new Slider(new ValueControlSettings<Float>("Pull",    1, width - (qw / 4), qh, qw / 4, height - qh - qh, 0.0, cHue, ts, dimmAlpha, centerG,   0.0,   0.01, 1000.0)));
   }
 }
 
@@ -109,8 +107,10 @@ void initParticles()
   // Populate particle array in a 
   // grid of reguarly-spaced particles
   int cur = 0;
-  for (int x = 0; x < d; x ++) {
-    for (int y = 0; y < d; y ++) {
+  for (int x = 0; x < d; x ++)
+  {
+    for (int y = 0; y < d; y ++)
+    {
       float r = random(min(width, height) / 2);
       float a = random(TWO_PI) - PI;
       float dx = cos(a) * r;
@@ -171,13 +171,14 @@ void drawAbout(int millis)
   }
 }
 
-void handleUI(int millis)
+void handleUI(int millis, String[] bTexts)
 {
   touch = false;
+  int i = 0;
   
   for (Button b : buttons)
   {
-    if (b.draw())
+    if (b.draw(bTexts[i++]))
     {
       touch = true;
 
@@ -211,16 +212,16 @@ void handleUI(int millis)
     {
       touch = true;
 
-      switch(s.id)
+      switch(s.s.id)
       {
       case 0:
-        density = (int)s.value;
+       // density.set(s.s.value.get());
+        break;
+      case 1:
+       // centerG.set(s.s.value.get());
         break;
       case 2:
         //weight = (int)s.value;
-        break;
-      case 1:
-        centerG = s.value;
         break;
       case 3:
         //weight = (int)s.value;
@@ -229,16 +230,16 @@ void handleUI(int millis)
     }
     else
     {
-      switch(s.id)
+      switch(s.s.id)
       {
       case 0:
-        s.value = density;
+        //s.s.value.set(density.get());
+        break;
+      case 1:
+        //s.s.value.set(centerG.get());
         break;
       case 2:
         //weight = (int)s.value;
-        break;
-      case 1:
-        s.value = centerG;
         break;
       case 3:
         //weight = (int)s.value;
@@ -263,7 +264,7 @@ void drawSpheres(int millis)
 
       if (pi.display)
       {
-        particles[i].update(millis, particles, i, density, factor, centerG);
+        particles[i].update(millis, particles, i, density.get(), factor, centerG.get());
         center.add(particles[i].loc);
       }
     }
@@ -309,32 +310,24 @@ void drawSpheres(int millis)
       }
     }
 
-      background(0);
+    background(0);
+    int objects = 0;
 
-      int objects = 0;
+    for (int i = 0; i < particles.length; i ++)
+    {
+      Particle pi = particles[i];
 
-      for (int i = 0; i < particles.length; i ++)
+      if (pi.display)
       {
-        Particle pi = particles[i];
-
-        if (pi.display)
-        {
-          pi.display(millis, particles, i, minv, maxv, cmode);
-          objects++;
-        }
+        pi.draw(millis, particles, i, minv, maxv, cmode);
+        objects++;
       }
+    }
 
-      String sm = smode == 0 ? getRunTime() : (smode == 1 ? nf(int(fRate), 0) : nf(width, 0)+","+nf(height, 0));
+    String sm = smode == 0 ? getRunTime() : (smode == 1 ? nf(int(fRate), 0) : nf(width, 0)+","+nf(height, 0));
+    String[] lt = {str(objects), sm, cmodes[cmode], rmodes[rmode > 0 ? 1 : 0]};
 
-      fill(0.277, maxSat, maxBgt);
-      String[] lt = {str(objects), sm, cmodes[cmode], rmodes[rmode > 0 ? 1 : 0]};
-      float lth = largeText(lt);
-
-      fill(0.5, maxSat, maxBgt);
-      String st[] = {"Objects", smodes[smode], "Color Mode", "touch twice to reset"};
-      smallText(st, lth);
-
-      handleUI(millis);
+    handleUI(millis, lt);
 
     rmode -= rmode > 0 ? 1 : 0;
     fRate = (fRate * 49 + frameRate) / 50;

@@ -58,7 +58,7 @@ class Particle
     size = 2 * radius(mass);
   }
   
-  void update(int millis, Particle[] particles, int me, int density, float factor, float centerG)
+  void update(int millis, Particle[] particles, int me, float density, float factor, float centerG)
   {
     // Re-calculate acceleration
     PVector pull = new PVector(-loc.x, -loc.y);
@@ -103,7 +103,7 @@ class Particle
     heat = min(500, max(0, heat));
   }
   
-  void display(int millis, Particle[] particles, int me, float minv, float maxv, int cmode) 
+  void draw(int millis, Particle[] particles, int me, float minv, float maxv, int cmode) 
   {
     // Don't display if invalid values or we're off-screen
     if(abs(loc.x) < ((width / 2) + size) &&

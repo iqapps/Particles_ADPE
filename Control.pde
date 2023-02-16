@@ -11,16 +11,16 @@ class Reference<T>
 class ControlSettings
 {
   public String title = "";
-  private int id = 0;
+  public int id = 0;
 
-  private int x = 0;
-  private int y = 0;
-  private int w = 100;
-  private int h = 100;
+  public int x = 0;
+  public int y = 0;
+  public int w = 100;
+  public int h = 100;
 
-  private float backHue = 0.3;
-  private float foreHue = 0.3;
-  private float textSize = 20;
+  public float backHue = 0.3;
+  public float foreHue = 0.3;
+  public float textSize = 20;
 
   Reference<Float> dimmAlpha = new Reference<Float>(maxAlp);
 
@@ -57,28 +57,34 @@ class ControlSettings
 class ValueControlSettings<T> extends ControlSettings
 {
   Reference<T> value;
+  T vMin;
+  T vMax;
+  T vFactor;
 
-  ValueControlSettings(String txtArg, int idArg, int xArg, int yArg, int wArg, int hArg, float bhueArg, float fhueArg, float tsArg, Reference<Float> dimArg, Reference<T> vArg)
+  ValueControlSettings(String txtArg, int idArg, int xArg, int yArg, int wArg, int hArg, float bhueArg, float fhueArg, float tsArg, Reference<Float> dimArg, Reference<T> vArg, T maxV, T minV, T factor)
   {
     super(txtArg, idArg, xArg, yArg, wArg, hArg, bhueArg, fhueArg, tsArg, dimArg);
     value = vArg;
+    vMin = minV;
+    vMax = maxV;
+    vFactor = factor;
   }
 }
 
-class Control
+class Control<S extends ControlSettings>
 {
-  ControlSettings s;
+  S s;
   float textX = 0;
   float textY = 0;
 
   boolean handled = false;
 
-  Control(ControlSettings settings)
+  Control(S settings)
   {
     s = settings;
   }
 
-  public boolean draw()
+  public boolean draw(boolean checkClicked)
   {
     pushStyle();
 
@@ -104,7 +110,7 @@ class Control
 
     popStyle();
 
-    return isClicked();
+    return checkClicked ? isClicked() : false;
   }
 
   private boolean isClicked()

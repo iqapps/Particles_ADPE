@@ -2,145 +2,101 @@
   A ui slider to set or show a value by
  touch, hold, slide, release movement.
  */
-class Slider
+class Slider extends Control<ValueControlSettings<Float>>
 {
-  String title = "Slider";
-  float textsize = 50;
-  int id;
-
-  float value = 0;
-  float vMin = 0;
-  float vMax = 100;
-  float factor = 1;
-
-  float x = 0;
-  float y = 0;
-  float w = 30;
-  float h = 300;
-
   float sliderWidth = 10;
-  float alpha = 1.0;
-
   boolean active = false;
+  String stored;
 
-  Slider(String titleArg, int idArg, float minV, float maxV, float initV, float factorArg, float xArg, float yArg, float wArg, float hArg)
+  Slider(ValueControlSettings<Float> settings)
   {
-    title = titleArg;
-    id = idArg;
-    vMin = minV;
-    vMax = maxV;
-    value = initV;
-    factor = factorArg;
-
-    x = xArg;
-    y = yArg;
-    w = wArg;
-    h = hArg;
-
-    textSize(textsize);
-    float tw = textWidth(title);
-
-    if (tw > (w * 0.8))
-    {
-      textsize = textsize * (w * 0.8) / tw;
-      textSize(textsize);
-    }
+    super(settings);
+    stored = s.title;
+    s.textSize = s.textSize * 0.6;
   }
 
   // update and draw slider, return tue if slider change value
   boolean draw()
   {
-    float alpha = dimmAlpha.get();
+    super.draw(false);
     
-    if (mousePressed)
-    {
-      if (touches[0].x >= x     && 
-          touches[0].x <= x + w &&
-          touches[0].y >= y     &&
-          touches[0].y <= y + h)
-      {
-        active = true;
-        
-        if (w > h)
-        {
-          float t = (vMax - vMin) / w;
-          value = vMin + (touches[0].x - x) * t;
-        } else
-        {
-          float t = (vMax - vMin) / h;
-          value = vMin + (touches[0].y - y) * t;
-        }
-
-        value = min(vMax, max(vMin, value));
-      }
-    } 
-    else
-    {
-      active = false;
-    }
-
     pushStyle();
 
-    float tox = x + w;
-    float toy = y + h;
+    float tox = s.x + s.w;
+    float toy = s.y + s.h;
 
-    float sw = (w - sliderWidth) / (vMax - vMin);
-    float fromx = x + (sliderWidth / 2) + ((value - vMin) * sw);
-    float sh = (h - sliderWidth) / (vMax - vMin);
-    float fromy = y + (sliderWidth / 2) + ((value - vMin) * sh);
+    float sw = (s.w - sliderWidth) / (s.vMax - s.vMin);
+    float fromx = s.x + (sliderWidth / 2) + ((s.value.get() - s.vMin) * sw);
+    float sh = (s.h - sliderWidth) / (s.vMax - s.vMin);
+    float fromy = s.y + (sliderWidth / 2) + ((s.value.get() - s.vMin) * sh);
 
-    if (alpha > 0)
+    if (s.dimmAlpha.get() > 0)
     {
-      textSize(textsize);
-      fill(0);
-      stroke(0.277, 1.0, 1.0, alpha);
-      strokeWeight(2.0);
-      rect(x, y, w, h);
-
-      float tw = textWidth(title);
-      fill(0.277, 1.0, 1.0, alpha);
-
-      if (w > h)
-      {
-        text(title, x, y + (y < (height / 2) ? h + textsize : -(textsize / 5)));
-      } 
-      else
-      {
-        text(title, x + ((w - tw) / 2), y + textsize);
-      }
-
-      fill(0.277, 1.0, 1.0, alpha);
-      String n = nf(value * factor, 1, 1);
+      s.title = stored;
+      fill(s.foreHue, 1.0, 1.0, s.dimmAlpha.get());
+      String n = nf(s.vFactor * s.value.get(), 1, 1);
       float posx = 0;
       float posy = 0;
 
-      if (w > h)
+      if (s.w > s.h)
       {
         posx = fromx - (textWidth(n) / 2);
-        posy = y + textsize + ((h - textsize) / 2) + (active ? (y > (height / 2) ? -200 : 200) : 0);
-      } else
+        posy = s.y + s.textSize + ((s.h - s.textSize) / 2) + (active ? (s.y > (height / 2) ? -200 : 200) : 0);
+      } 
+      else
       {
-        posx = x + (active ? (x > (width / 2) ? - 200 : 200 ) : ((w - textWidth(n)) / 2));
-        posy = fromy + (textsize / 2);
+        posx = s.x + (active ? (s.x > (width / 2) ? - 200 : 200 ) : ((s.w - textWidth(n)) / 2));
+        posy = fromy + (s.textSize / 2);
       }
 
       text(n, posx, posy);
     }
     else
     {
-      stroke(0.277, 1.0, 1.0, 0.5 + (alpha * 0.5));
+      s.title = "";
+      stroke(s.foreHue, 1.0, 1.0, 0.5 + (s.dimmAlpha.get() * 0.5));
       strokeWeight(sliderWidth);
-      if (w > h)
+      if (s.w > s.h)
       {
-        line(fromx, y, fromx, toy);
+        line(fromx, s.y, fromx, toy);
       } 
       else
       {
-        line(x, fromy, tox, fromy);
+        line(s.x, fromy, tox, fromy);
       }
     }
     
     popStyle();
+    
+    return isMoved();
+  }
+  
+  boolean isMoved()
+  {
+    if (mousePressed)
+    {
+      if (touches[0].x >= s.x       && 
+          touches[0].x <= s.x + s.w &&
+          touches[0].y >= s.y       &&
+          touches[0].y <= s.y + s.h)
+      {
+        active = true;
+        
+        if (s.w > s.h)
+        {
+          float t = (s.vMax - s.vMin) / s.w;
+          s.value.set(s.vMin + (touches[0].x - s.x) * t);
+        } else
+        {
+          float t = (s.vMax - s.vMin) / s.h;
+          s.value.set(s.vMin + (touches[0].y - s.y) * t);
+        }
+      }
+    } 
+    else
+    {
+      active = false;
+    }
     
     return active;
   }
